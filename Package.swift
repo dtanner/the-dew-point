@@ -7,11 +7,20 @@ import PackageDescription
 // watchOS, WeatherKit, or SwiftUI.
 let package = Package(
     name: "DewPoint",
+    // Floors are set low enough that the pure engine still tests on the macOS
+    // host via `swift test`; the watch app/widget targets set their own (higher)
+    // deployment target. macOS 14 / watchOS 10 is the floor for CLLocationUpdate.
+    platforms: [.watchOS(.v10), .macOS(.v15), .iOS(.v17)],
     products: [
         .library(name: "ThermalComfort", targets: ["ThermalComfort"]),
+        .library(name: "WeatherData", targets: ["WeatherData"]),
     ],
     targets: [
         .target(name: "ThermalComfort"),
+        // The data layer: turns location into current temperature + dew point via
+        // WeatherKit, behind a protocol so the UI can be driven by fakes. Kept
+        // separate from ThermalComfort so the engine stays dependency-free.
+        .target(name: "WeatherData"),
         .testTarget(
             name: "ThermalComfortTests",
             dependencies: ["ThermalComfort"],

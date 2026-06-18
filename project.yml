@@ -1,0 +1,49 @@
+# XcodeGen project definition. The .xcodeproj is generated from this file and is
+# git-ignored — run `just generate` after cloning or changing this file. Keeping
+# the project declarative here avoids pbxproj merge conflicts.
+name: TheDewPoint
+
+options:
+  bundleIdPrefix: com.dantanner
+  createIntermediateGroups: true
+  deploymentTarget:
+    watchOS: "26.0"
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: PG956FSTJB
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+packages:
+  DewPoint:
+    path: .
+
+targets:
+  TheDewPoint:
+    type: application
+    platform: watchOS
+    sources:
+      - App
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.thedewpoint
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    info:
+      path: App/Info.plist
+      properties:
+        # Marks this as a single-target (watch-only) watchOS app.
+        WKApplication: true
+        CFBundleDisplayName: The Dew Point
+        NSLocationWhenInUseUsageDescription: The Dew Point uses your location to fetch the local temperature and dew point.
+    entitlements:
+      path: App/TheDewPoint.entitlements
+      properties:
+        com.apple.developer.weatherkit: true
+    dependencies:
+      - package: DewPoint
+        product: ThermalComfort
+      - package: DewPoint
+        product: WeatherData

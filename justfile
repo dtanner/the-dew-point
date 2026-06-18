@@ -15,5 +15,14 @@ test:
 build:
     swift build
 
-# Engine-only commands above. App/complication targets (XcodeGen project,
-# device deploy) get added in M2/M3.
+# Regenerate the Xcode project from project.yml (run after cloning or editing it).
+generate:
+    xcodegen generate
+
+# Compile the watch app for the simulator (no device or paired watch needed).
+build-app: generate
+    xcodebuild build \
+        -project TheDewPoint.xcodeproj \
+        -scheme TheDewPoint \
+        -destination 'generic/platform=watchOS Simulator' \
+        -quiet

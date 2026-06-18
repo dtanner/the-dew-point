@@ -29,17 +29,27 @@ confidence: regenerate the fixture and read the diff.
 
 ## Development
 
-Requires Xcode 26+ and [`just`](https://github.com/casey/just).
+Requires Xcode 26+, [`just`](https://github.com/casey/just), and
+[`xcodegen`](https://github.com/yonsson/XcodeGen). The `.xcodeproj` is generated
+from `project.yml` and git-ignored.
 
 ```
-just test    # run the engine suite (no Xcode/simulator needed)
-just build   # build the engine package
+just test       # run the engine suite (no Xcode/simulator needed)
+just build      # build the engine package
+just generate   # (re)generate the Xcode project
+just build-app  # compile the watch app for the simulator
 ```
+
+Building or running the watch app target requires the **watchOS platform
+runtime** to be installed (Xcode ▸ Settings ▸ Components, or
+`xcodebuild -downloadPlatform watchOS`). The engine package alone does not.
 
 ## Status
 
 - **M1 (done):** comfort engine + parity tests.
-- **M2:** standalone watch app — current conditions via WeatherKit + location.
+- **M2 (in progress):** standalone watch app — current conditions via WeatherKit +
+  location. Code compiles for watchOS 26; on-device run pending the platform
+  runtime install.
 - **M3:** watch-face complications — each slot independently configurable to show
   the word or the icon (e.g. word in one Modular slot, icon in another). Uses SF
   Symbols, since emoji render poorly tinted.
