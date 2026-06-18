@@ -34,8 +34,11 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        # Marks this as a single-target (watch-only) watchOS app.
+        # Marks this as a single-target (watch-only) watchOS app. WKApplication
+        # satisfies the modern install path; WKWatchOnly satisfies the legacy
+        # WatchKit validator, which still runs and rejects the app without it.
         WKApplication: true
+        WKWatchOnly: true
         CFBundleDisplayName: The Dew Point
         NSLocationWhenInUseUsageDescription: The Dew Point uses your location to fetch the local temperature and dew point.
     entitlements:
