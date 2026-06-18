@@ -101,8 +101,8 @@ private extension String.StringInterpolation {
 #if DEBUG
 #Preview("Muggy") {
     ConditionsView(
-        snapshot: WeatherSnapshot(temperatureF: 86, dewpointF: 72, asOf: .now),
-        descriptor: describe(tempF: 86, dewpointF: 72)
+        snapshot: WeatherSnapshot(temperatureF: 70, dewpointF: 64, asOf: .now),
+        descriptor: describe(tempF: 70, dewpointF: 64)
     )
 }
 
