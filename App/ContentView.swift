@@ -78,7 +78,10 @@ private struct AttributionView: View {
     var body: some View {
         Group {
             if let legalURL {
-                Link("Weather", destination: legalURL)
+                // .plain so the link reads as subtle text, not a full-width
+                // watchOS button competing with the content.
+                Link(destination: legalURL) { Text("Weather") }
+                    .buttonStyle(.plain)
             } else {
                 Text("Weather")
             }
