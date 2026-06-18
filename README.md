@@ -1,8 +1,8 @@
 # The Dew Point
 
-A watchOS app (Apple Watch Ultra 2 and up) that turns the current temperature and
-dew point into a single, glanceable word and icon describing how it feels
-outside — e.g. _Crisp_ 🍃, _Muggy_ 😓, _Sweltering_ 🔥.
+A watchOS app (watchOS 26+) that turns the current temperature and dew point into
+a single, glanceable word and icon describing how it feels outside — e.g.
+_Crisp_ 🍃, _Muggy_ 😓, _Sweltering_ 🔥.
 
 **Vocabulary:** each condition produces a **word** and an **icon** (two
 independent display channels). The icon has two renditions — a color **emoji**

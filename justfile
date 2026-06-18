@@ -3,6 +3,10 @@
 
 set shell := ["zsh", "-cu"]
 
+# The paired Apple Watch's CoreDevice identifier (from `xcrun devicectl list
+# devices`). Override per machine: `just deploy watch=<uuid>`.
+watch := "D0015F3B-57F5-58A2-B168-4577D3A78839"
+
 # List available recipes.
 default:
     @just --list
@@ -26,3 +30,19 @@ build-app: generate
         -scheme TheDewPoint \
         -destination 'generic/platform=watchOS Simulator' \
         -quiet
+
+# Build, sign, install, and launch on the paired Apple Watch.
+# The watch must be unlocked, on the same Wi-Fi as this Mac, with Developer Mode
+# on (keeping it on its charger helps it stay awake during install).
+deploy: generate
+    xcodebuild build \
+        -project TheDewPoint.xcodeproj \
+        -scheme TheDewPoint \
+        -destination 'generic/platform=watchOS' \
+        -allowProvisioningUpdates \
+        -derivedDataPath build/dd \
+        -quiet
+    xcrun devicectl device install app --device {{watch}} \
+        build/dd/Build/Products/Debug-watchos/TheDewPoint.app
+    xcrun devicectl device process launch --device {{watch}} \
+        com.dantanner.thedewpoint
