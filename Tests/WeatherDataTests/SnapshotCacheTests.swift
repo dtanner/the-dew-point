@@ -18,7 +18,8 @@ struct SnapshotCacheTests {
         CachedReading(
             snapshot: WeatherSnapshot(temperatureF: tempF, dewpointF: dewpointF, asOf: .now),
             latitude: 37.7749,
-            longitude: -122.4194
+            longitude: -122.4194,
+            fetchedAt: .now
         )
     }
 
@@ -31,7 +32,8 @@ struct SnapshotCacheTests {
                 asOf: Date(timeIntervalSince1970: 1_700_000_000)
             ),
             latitude: 37.7749,
-            longitude: -122.4194
+            longitude: -122.4194,
+            fetchedAt: Date(timeIntervalSince1970: 1_700_000_100)
         )
 
         cache.save(saved)

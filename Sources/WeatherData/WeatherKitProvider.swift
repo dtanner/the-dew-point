@@ -28,12 +28,15 @@ public final class WeatherKitProvider: WeatherProviding {
             dewpointF: current.dewPoint.converted(to: .fahrenheit).value,
             asOf: current.date
         )
-        // Remember the reading and where it was taken so the complication can keep
-        // itself current (refetch for this coordinate) without the app being opened.
+        // Remember the reading, where it was taken, and when we fetched it so the
+        // complication can keep itself current (refetch for this coordinate) without
+        // the app being opened, and so the TTL gate can age the entry from our fetch
+        // time rather than WeatherKit's (older) observation time.
         cache.save(CachedReading(
             snapshot: snapshot,
             latitude: place.coordinate.latitude,
-            longitude: place.coordinate.longitude
+            longitude: place.coordinate.longitude,
+            fetchedAt: Date()
         ))
         return snapshot
     }

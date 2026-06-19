@@ -33,12 +33,12 @@ public final class CachingWeatherProvider: WeatherProviding {
     }
 
     public func currentSnapshot() async throws -> WeatherSnapshot {
-        // `asOf` is WeatherKit's observation time, not our fetch time. For a 15–30
-        // min comfort glance that's close enough; if WeatherKit ever returns
-        // observations old enough to cause fetch thrashing, add an explicit
-        // `fetchedAt` to `CachedReading` and gate on that instead.
+        // Gate on `fetchedAt` (when we got the reading), not `snapshot.asOf`
+        // (WeatherKit's observation time, which lags real time). Aging from our fetch
+        // time keeps the cache window predictable: a reading lives exactly `ttl` after
+        // we fetched it, even if the underlying observation was already old.
         if let cached = cache.load(),
-           now().timeIntervalSince(cached.snapshot.asOf) < ttl {
+           now().timeIntervalSince(cached.fetchedAt) < ttl {
             return cached.snapshot
         }
         return try await wrapped.currentSnapshot()

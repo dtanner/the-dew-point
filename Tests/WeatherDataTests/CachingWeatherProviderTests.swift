@@ -30,18 +30,25 @@ struct CachingWeatherProviderTests {
         return (SnapshotCache(defaults: defaults), defaults)
     }
 
-    private func cachedReading(asOf: Date, tempF: Double) -> CachedReading {
+    private func cachedReading(fetchedAt: Date, tempF: Double) -> CachedReading {
         CachedReading(
-            snapshot: WeatherSnapshot(temperatureF: tempF, dewpointF: 50, asOf: asOf),
+            // asOf is deliberately far older than the TTL to prove the gate ages from
+            // fetchedAt, not from WeatherKit's observation time.
+            snapshot: WeatherSnapshot(
+                temperatureF: tempF,
+                dewpointF: 50,
+                asOf: fetchedAt.addingTimeInterval(-60 * 60)
+            ),
             latitude: 37.7749,
-            longitude: -122.4194
+            longitude: -122.4194,
+            fetchedAt: fetchedAt
         )
     }
 
     @Test func servesFreshCacheWithoutFetching() async throws {
         let (cache, _) = makeCache()
         let now = Date(timeIntervalSince1970: 1_700_000_000)
-        cache.save(cachedReading(asOf: now.addingTimeInterval(-5 * 60), tempF: 70))
+        cache.save(cachedReading(fetchedAt: now.addingTimeInterval(-5 * 60), tempF: 70))
 
         let wrapped = SpyProvider(
             snapshot: WeatherSnapshot(temperatureF: 99, dewpointF: 99, asOf: now)
@@ -59,7 +66,7 @@ struct CachingWeatherProviderTests {
     @Test func fetchesWhenCacheIsStale() async throws {
         let (cache, _) = makeCache()
         let now = Date(timeIntervalSince1970: 1_700_000_000)
-        cache.save(cachedReading(asOf: now.addingTimeInterval(-20 * 60), tempF: 70))
+        cache.save(cachedReading(fetchedAt: now.addingTimeInterval(-20 * 60), tempF: 70))
 
         let wrapped = SpyProvider(
             snapshot: WeatherSnapshot(temperatureF: 99, dewpointF: 99, asOf: now)

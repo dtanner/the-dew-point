@@ -6,6 +6,7 @@ import WeatherData
 /// (re)fetches when it appears.
 struct ContentView: View {
     @State private var model: ConditionsModel
+    @Environment(\.scenePhase) private var scenePhase
 
     init(model: ConditionsModel) {
         _model = State(initialValue: model)
@@ -25,6 +26,16 @@ struct ContentView: View {
             }
         }
         .task { await model.refresh() }
+        // `.task` only runs when the view is first created. watchOS resumes a
+        // suspended app without recreating it, so without this a reopen would show
+        // the last-rendered (possibly hours-old) reading. Refetch on every return
+        // to active; the provider's TTL still gates the actual WeatherKit call.
+        // onChange skips the initial `.active`, so cold launch doesn't double-fetch.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                Task { await model.refresh() }
+            }
+        }
     }
 }
 

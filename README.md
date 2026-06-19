@@ -69,21 +69,3 @@ just build-app  # compile the watch app for the simulator
 Building or running the watch app target requires the **watchOS platform
 runtime** to be installed (Xcode ▸ Settings ▸ Components, or
 `xcodebuild -downloadPlatform watchOS`). The engine package alone does not.
-
-## Status
-
-- **M1 (done):** comfort engine + parity tests.
-- **M2 (done):** standalone watch app — current conditions via WeatherKit +
-  location. Deployed to device.
-- **M3 (done):** watch-face complications, working on-device. Two fixed kinds —
-  _The Dew Point — Word_ and _The Dew Point — Icon_ — so each Modular slot is set
-  just by choosing which to place (the most reliable path in the iPhone Watch app).
-  The icon uses SF Symbols, since emoji render poorly when tinted. A widget
-  extension can't reliably get its own location, so each reading is shared with its
-  coordinate through an App Group; the complication then self-fetches fresh weather
-  for that coordinate on its own ~30-min timeline (no app-open needed), falling back
-  to the last cached reading when offline. The extension ships embedded in the app
-  (no extra deploy step). Each word now maps to a distinct SF Symbol (enforced by a
-  test). Remaining: confirm on-device that WeatherKit refreshes run inside the
-  extension, and eyeball the tinted symbols.
-- **M4:** real-world "felt right/off" tuning loop.

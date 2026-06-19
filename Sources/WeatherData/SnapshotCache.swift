@@ -13,21 +13,28 @@ public enum AppGroup {
 }
 
 /// The last reading the app (or widget) successfully fetched: the conditions plus
-/// the coordinate they were read for.
+/// the coordinate they were read for and the wall-clock time we fetched them.
 ///
 /// The coordinate is the important addition for the complication: a watch widget
 /// extension often can't get its own location fix, so the widget reuses this last
 /// coordinate to fetch its own fresh weather, and falls back to `snapshot` only if
 /// that fetch also fails.
+///
+/// `fetchedAt` is our own fetch time, distinct from `snapshot.asOf` (WeatherKit's
+/// observation time, which lags real time). The TTL gate measures against this so a
+/// reading expires a fixed interval after *we* got it, regardless of how stale the
+/// underlying observation was.
 public struct CachedReading: Codable, Equatable, Sendable {
     public let snapshot: WeatherSnapshot
     public let latitude: Double
     public let longitude: Double
+    public let fetchedAt: Date
 
-    public init(snapshot: WeatherSnapshot, latitude: Double, longitude: Double) {
+    public init(snapshot: WeatherSnapshot, latitude: Double, longitude: Double, fetchedAt: Date) {
         self.snapshot = snapshot
         self.latitude = latitude
         self.longitude = longitude
+        self.fetchedAt = fetchedAt
     }
 }
 
