@@ -17,6 +17,10 @@ xcuserdata/
 DerivedData/
 *.xcuserstate
 
+# Screenshots are hosted as GitHub release assets (the `assets` release), not
+# committed, so they don't bloat history. Kept locally for re-uploading.
+images/screenshots/
+
 # macOS
 .DS_Store
 

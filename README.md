@@ -15,6 +15,23 @@ The full temperature/dew-point → word + icon mapping (app emoji and complicati
 SF Symbol) lives in [COMFORT_TABLE.md](COMFORT_TABLE.md), kept up to date as we
 get real-world tuning feedback.
 
+## Screenshots
+
+The app screen and the two watch-face complications, all showing the same sample
+condition (_Muggy_):
+
+<p>
+  <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/app.png" width="220" alt="The Dew Point app showing Muggy, 70° / dew 64°">
+  &nbsp;&nbsp;
+  <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/complications.png" width="360" alt="The Word and Icon complications showing Muggy">
+</p>
+
+The app shot is a watchOS simulator capture. The complication image is rendered
+from the same descriptor (`just complications`) to mimic a tinted watch face —
+the real tint follows the user's watch-face settings.
+
+These images are hosted as assets on the [`assets` release](https://github.com/dtanner/the-dew-point/releases/tag/assets), not committed to the repo, so screenshots don't bloat git history. To refresh one, regenerate it locally and run `gh release upload assets <file> --clobber` — the URLs above stay valid.
+
 ## Architecture
 
 The comfort logic is a pure, platform-agnostic Swift package (`ThermalComfort`)

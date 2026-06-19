@@ -31,6 +31,10 @@ generate:
 symbols:
     swift Scripts/render-symbols.swift
 
+# Render the Word + Icon complications to a PNG for the README (macOS only).
+complications:
+    swift Scripts/render-complications.swift
+
 # Compile the watch app for the simulator (no device or paired watch needed).
 build-app: generate
     xcodebuild build \
