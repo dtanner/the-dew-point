@@ -15,9 +15,12 @@ public struct ComfortDescriptor: Equatable, Hashable, Sendable {
     public let word: String
     /// Color emoji rendition of the icon, for rich contexts (the full-screen app).
     public let emoji: String
-    /// SF Symbol rendition of the icon, for complications. Provisional — these are
-    /// first-draft choices to be reviewed against the SF Symbols app when the
-    /// complication (M3) is built.
+    /// SF Symbol rendition of the icon, for complications. Chosen to be visually
+    /// distinct across the whole catalog (no two words share a glyph, except the
+    /// two "Warm" bands which deliberately match), spreading the temperature axis
+    /// across the thermometer family and the modifier across sun/cloud/moisture
+    /// glyphs. Still worth a final eyeball on-device, since shapes read differently
+    /// when tinted and shrunk to a complication slot.
     public let symbol: String
 
     public init(word: String, emoji: String, symbol: String) {
@@ -43,11 +46,11 @@ public extension ComfortDescriptor {
     static let clammy      = Self(word: "Clammy",      emoji: "🌫️", symbol: "humidity.fill")
     static let brisk       = Self(word: "Brisk",       emoji: "💨", symbol: "wind")
     static let comfortable = Self(word: "Comfortable", emoji: "🌤️", symbol: "cloud.sun.fill")
-    static let damp        = Self(word: "Damp",        emoji: "💧", symbol: "drop.fill")
-    static let pleasant    = Self(word: "Pleasant",    emoji: "☀️", symbol: "sun.max.fill")
-    static let sticky      = Self(word: "Sticky",      emoji: "💦", symbol: "humidity.fill")
-    static let muggy       = Self(word: "Muggy",       emoji: "😓", symbol: "humidity.fill")
-    static let balmy       = Self(word: "Balmy",       emoji: "🌞", symbol: "sun.max.fill")
+    static let damp        = Self(word: "Damp",        emoji: "💧", symbol: "cloud.drizzle.fill")
+    static let pleasant    = Self(word: "Pleasant",    emoji: "☀️", symbol: "sun.min.fill")
+    static let sticky      = Self(word: "Sticky",      emoji: "💦", symbol: "drop.fill")
+    static let muggy       = Self(word: "Muggy",       emoji: "😓", symbol: "cloud.fill")
+    static let balmy       = Self(word: "Balmy",       emoji: "🌞", symbol: "sun.haze.fill")
     static let warm        = Self(word: "Warm",        emoji: "☀️", symbol: "sun.max.fill")
     static let warmBright  = Self(word: "Warm",        emoji: "🌞", symbol: "sun.max.fill")
     static let oppressive  = Self(word: "Oppressive",  emoji: "😰", symbol: "thermometer.high")
@@ -57,5 +60,15 @@ public extension ComfortDescriptor {
     static let dryHeat     = Self(word: "Dry Heat",    emoji: "🌵", symbol: "sun.dust.fill")
     static let dangerous   = Self(word: "Dangerous",   emoji: "🥵", symbol: "exclamationmark.triangle.fill")
     static let scorching   = Self(word: "Scorching",   emoji: "🏜️", symbol: "sun.max.trianglebadge.exclamationmark")
-    static let deadly      = Self(word: "Deadly",      emoji: "☠️", symbol: "exclamationmark.triangle.fill")
+    static let deadly      = Self(word: "Deadly",      emoji: "☠️", symbol: "exclamationmark.octagon.fill")
+}
+
+extension ComfortDescriptor {
+    /// Every canonical descriptor, in cold-to-hot order — for catalog-wide checks
+    /// (e.g. the symbol-distinctness test) and any future gallery iteration.
+    static let all: [ComfortDescriptor] = [
+        .bitter, .raw, .freezing, .crisp, .cold, .clammy, .brisk, .comfortable,
+        .damp, .pleasant, .sticky, .muggy, .balmy, .warm, .warmBright, .oppressive,
+        .hot, .sweltering, .miserable, .dryHeat, .dangerous, .scorching, .deadly,
+    ]
 }

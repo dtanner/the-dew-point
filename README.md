@@ -14,12 +14,17 @@ Bundle ID: `com.dantanner.thedewpoint`
 ## Architecture
 
 The comfort logic is a pure, platform-agnostic Swift package (`ThermalComfort`)
-with no knowledge of watchOS, WeatherKit, or SwiftUI. The watch app and the
-watch-face complication compose on top of it.
+with no knowledge of watchOS, WeatherKit, or SwiftUI. A second package
+(`WeatherData`) turns a location into current conditions via WeatherKit behind a
+protocol. The watch app and the watch-face complication compose on top — the
+complication reuses both packages unchanged and fetches on its own timeline.
 
 ```
-Sources/ThermalComfort/   The brain: meteorology + descriptor banding
-Tests/ThermalComfortTests/ Parity grid + focused unit tests
+Sources/ThermalComfort/    The brain: meteorology + descriptor banding
+Sources/WeatherData/       WeatherKit + location behind a protocol; offline cache
+App/                       The watch app (current conditions screen)
+Complication/              WidgetKit extension: Word + Icon complications
+Tests/                     Parity grid, focused unit tests, cache round-trip
 ```
 
 The descriptor logic was validated against a reference implementation by baking a
@@ -47,9 +52,17 @@ runtime** to be installed (Xcode ▸ Settings ▸ Components, or
 ## Status
 
 - **M1 (done):** comfort engine + parity tests.
-- **M2 (in progress):** standalone watch app — current conditions via WeatherKit +
-  location. Code compiles for watchOS 26; on-device run pending the platform
-  runtime install.
-- **M3:** watch-face complications — each slot independently configurable to show
-  the word or the icon (e.g. word in one Modular slot, icon in another). Uses SF
-  Symbols, since emoji render poorly tinted.
+- **M2 (done):** standalone watch app — current conditions via WeatherKit +
+  location. Deployed to device.
+- **M3 (done):** watch-face complications, working on-device. Two fixed kinds —
+  _The Dew Point — Word_ and _The Dew Point — Icon_ — so each Modular slot is set
+  just by choosing which to place (the most reliable path in the iPhone Watch app).
+  The icon uses SF Symbols, since emoji render poorly when tinted. A widget
+  extension can't reliably get its own location, so each reading is shared with its
+  coordinate through an App Group; the complication then self-fetches fresh weather
+  for that coordinate on its own ~30-min timeline (no app-open needed), falling back
+  to the last cached reading when offline. The extension ships embedded in the app
+  (no extra deploy step). Each word now maps to a distinct SF Symbol (enforced by a
+  test). Remaining: confirm on-device that WeatherKit refreshes run inside the
+  extension, and eyeball the tinted symbols.
+- **M4:** real-world "felt right/off" tuning loop.

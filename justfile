@@ -4,8 +4,12 @@
 set shell := ["zsh", "-cu"]
 
 # The paired Apple Watch's CoreDevice identifier (from `xcrun devicectl list
-# devices`). Override per machine: `just deploy watch=<uuid>`.
+# devices`), used by devicectl to install/launch. Override: `just deploy watch=<uuid>`.
 watch := "D0015F3B-57F5-58A2-B168-4577D3A78839"
+# The same watch's xcodebuild destination id (from `xcodebuild -showdestinations`).
+# Building against the specific device (not generic) is what registers the watch's
+# UDID into the provisioning profile so it can be installed.
+watch_build_id := "00008301-C89EE5061180202E"
 
 # List available recipes.
 default:
@@ -33,12 +37,14 @@ build-app: generate
 
 # Build, sign, install, and launch on the paired Apple Watch.
 # The watch must be unlocked, on the same Wi-Fi as this Mac, with Developer Mode
-# on (keeping it on its charger helps it stay awake during install).
+# on (keeping it on its charger helps it stay awake during install). The
+# complication extension is embedded in the app, so it ships with this deploy;
+# add the complications by editing a watch face on the watch or in the Watch app.
 deploy: generate
     xcodebuild build \
         -project TheDewPoint.xcodeproj \
         -scheme TheDewPoint \
-        -destination 'generic/platform=watchOS' \
+        -destination 'platform=watchOS,id={{watch_build_id}}' \
         -allowProvisioningUpdates \
         -derivedDataPath build/dd \
         -quiet

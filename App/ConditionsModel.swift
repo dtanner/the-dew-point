@@ -1,6 +1,7 @@
 import Observation
 import ThermalComfort
 import WeatherData
+import WidgetKit
 
 /// Drives the main screen: fetches a weather snapshot, runs it through the
 /// comfort engine, and exposes a single phase the view switches on.
@@ -26,6 +27,9 @@ final class ConditionsModel {
             let snapshot = try await provider.currentSnapshot()
             let descriptor = describe(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
             phase = .loaded(snapshot, descriptor)
+            // The provider cached this reading + its coordinate; nudge the
+            // complications so opening the app refreshes them right away too.
+            WidgetCenter.shared.reloadAllTimelines()
         } catch is CancellationError {
             // The view went away mid-fetch; leave the current phase untouched.
         } catch {

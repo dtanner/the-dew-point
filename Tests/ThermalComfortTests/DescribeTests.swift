@@ -6,6 +6,23 @@ import Testing
 /// valid domain.
 struct DescribeTests {
 
+    // Each distinct word should own a distinct complication symbol so the icon
+    // complication is unambiguous. The two "Warm" bands intentionally share a
+    // symbol, which keying on word allows. Guards against a future descriptor
+    // silently reusing another's glyph.
+    @Test func distinctWordsHaveDistinctSymbols() {
+        var symbolByWord: [String: String] = [:]
+        for descriptor in ComfortDescriptor.all {
+            if let existing = symbolByWord[descriptor.word] {
+                #expect(existing == descriptor.symbol)
+            } else {
+                symbolByWord[descriptor.word] = descriptor.symbol
+            }
+        }
+        let symbols = Array(symbolByWord.values)
+        #expect(Set(symbols).count == symbols.count)
+    }
+
     // The two worked examples from the spec's Cool section — same dew point,
     // different temperature, deliberately different result.
     @Test func coolBandExamplesFromSpec() {

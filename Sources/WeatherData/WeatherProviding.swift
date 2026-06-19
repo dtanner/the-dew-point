@@ -3,7 +3,7 @@ import Foundation
 /// Current outdoor conditions reduced to exactly what the comfort engine needs:
 /// temperature and dew point, both in °F. Carries the observation time so the UI
 /// can show staleness.
-public struct WeatherSnapshot: Equatable, Sendable {
+public struct WeatherSnapshot: Equatable, Sendable, Codable {
     public let temperatureF: Double
     public let dewpointF: Double
     public let asOf: Date

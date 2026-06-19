@@ -12,6 +12,11 @@ options:
 settings:
   base:
     DEVELOPMENT_TEAM: PG956FSTJB
+    # Explicit so the new complication target also goes through automatic
+    # provisioning — otherwise Xcode falls back to a generic wildcard profile that
+    # doesn't include the watch (and isn't WeatherKit-capable) and the device build
+    # fails. `just deploy` passes -allowProvisioningUpdates to register the new App ID.
+    CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
@@ -45,6 +50,40 @@ targets:
       path: App/TheDewPoint.entitlements
       properties:
         com.apple.developer.weatherkit: true
+        # Shared storage so the app can hand its latest reading to the complication.
+        com.apple.security.application-groups:
+          - group.com.dantanner.thedewpoint
+    dependencies:
+      - package: DewPoint
+        product: ThermalComfort
+      - package: DewPoint
+        product: WeatherData
+      # Embeds the complication extension so it ships (and deploys) with the app.
+      - target: DewPointComplication
+
+  # WidgetKit extension hosting the two complications. Reuses the same packages as
+  # the app and fetches its own conditions on a timeline (see ComfortProvider).
+  DewPointComplication:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - Complication
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.thedewpoint.widget
+    info:
+      path: Complication/Info.plist
+      properties:
+        CFBundleDisplayName: The Dew Point
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Complication/DewPointComplication.entitlements
+      properties:
+        com.apple.developer.weatherkit: true
+        # Same group as the app — this is how the widget reads the app's reading.
+        com.apple.security.application-groups:
+          - group.com.dantanner.thedewpoint
     dependencies:
       - package: DewPoint
         product: ThermalComfort

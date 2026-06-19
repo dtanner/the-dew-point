@@ -29,5 +29,6 @@ let package = Package(
             // ParityTests for how these lock the Swift port to the spec.
             resources: [.copy("Fixtures/parity.csv")]
         ),
+        .testTarget(name: "WeatherDataTests", dependencies: ["WeatherData"]),
     ]
 )
