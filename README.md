@@ -11,6 +11,10 @@ _icon_, _emoji_, and _symbol_ are used consistently throughout the code.
 
 Bundle ID: `com.dantanner.thedewpoint`
 
+The full temperature/dew-point → word + icon mapping (app emoji and complication
+SF Symbol) lives in [COMFORT_TABLE.md](COMFORT_TABLE.md), kept up to date as we
+get real-world tuning feedback.
+
 ## Architecture
 
 The comfort logic is a pure, platform-agnostic Swift package (`ThermalComfort`)

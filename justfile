@@ -27,6 +27,10 @@ build:
 generate:
     xcodegen generate
 
+# Render the complication SF Symbols to PNGs for COMFORT_TABLE.md (macOS only).
+symbols:
+    swift Scripts/render-symbols.swift
+
 # Compile the watch app for the simulator (no device or paired watch needed).
 build-app: generate
     xcodebuild build \
