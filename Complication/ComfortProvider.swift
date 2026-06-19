@@ -41,8 +41,14 @@ struct ComfortProvider: TimelineProvider {
         do {
             // Self-fetch fresh weather, locating via the device's own fix or, if the
             // extension has none, the coordinate from the app's last reading. The
-            // provider re-caches on success, keeping the fallback current.
-            let provider = WeatherKitProvider(location: LastKnownLocationProvider())
+            // TTL gate means an app fetch the complication's reload was triggered by
+            // is served straight from the cache the app just wrote — no second
+            // WeatherKit call. The wrapped provider re-caches on a real fetch,
+            // keeping the fallback current.
+            let provider = CachingWeatherProvider(
+                wrapping: WeatherKitProvider(location: LastKnownLocationProvider()),
+                ttl: 30 * 60
+            )
             return entry(for: try await provider.currentSnapshot())
         } catch {
             if let cached = SnapshotCache().load() {

@@ -23,6 +23,8 @@ struct TheDewPointApp: App {
             )
         }
         #endif
-        return WeatherKitProvider()
+        // Gate live fetches behind a TTL reading the shared cache, so an app open
+        // and the complication's self-fetch don't both hit WeatherKit seconds apart.
+        return CachingWeatherProvider(wrapping: WeatherKitProvider(), ttl: 15 * 60)
     }
 }
