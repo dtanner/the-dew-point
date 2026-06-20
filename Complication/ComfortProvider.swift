@@ -61,7 +61,7 @@ struct ComfortProvider: TimelineProvider {
     private static func entry(for snapshot: WeatherSnapshot) -> ComfortEntry {
         ComfortEntry(
             date: snapshot.asOf,
-            descriptor: describe(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+            descriptor: snapshot.precipitation ?? describe(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
         )
     }
 }

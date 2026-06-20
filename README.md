@@ -1,29 +1,26 @@
 # The Dew Point
 
 A watchOS app (watchOS 26+) that turns the current temperature and dew point into
-a single, glanceable word and icon describing how it feels outside — e.g.
-_Crisp_ 🍃, _Muggy_ 😓, _Sweltering_ 🔥.
-
-**Vocabulary:** each condition produces a **word** and an **icon** (two
-independent display channels). The icon has two renditions — a color **emoji**
-for the app and an SF **symbol** for tinted complications. The terms _word_,
-_icon_, _emoji_, and _symbol_ are used consistently throughout the code.
+a single, glanceable word describing how it feels outside — e.g. _Crisp_,
+_Muggy_, _Sweltering_. When it's precipitating, the comfort word gives way to
+what's falling (_Heavy Rain_, _Scattered Thunderstorms_), taken straight from
+WeatherKit's current condition.
 
 Bundle ID: `com.dantanner.thedewpoint`
 
-The full temperature/dew-point → word + icon mapping (app emoji and complication
-SF Symbol) lives in [COMFORT_TABLE.md](COMFORT_TABLE.md), kept up to date as we
-get real-world tuning feedback.
+The full temperature/dew-point → word mapping lives in
+[COMFORT_TABLE.md](COMFORT_TABLE.md), kept up to date as we get real-world tuning
+feedback.
 
 ## Screenshots
 
-The app screen and the two watch-face complications, all showing the same sample
+The app screen and the watch-face word complication, both showing the same sample
 condition (_Muggy_):
 
 <p>
   <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/app.png" width="220" alt="The Dew Point app showing Muggy, 70° / dew 64°">
   &nbsp;&nbsp;
-  <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/complications.png" width="360" alt="The Word and Icon complications showing Muggy">
+  <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/complications.png" width="240" alt="The Word complication showing Muggy">
 </p>
 
 The app shot is a watchOS simulator capture. The complication image is rendered
@@ -44,7 +41,7 @@ complication reuses both packages unchanged and fetches on its own timeline.
 Sources/ThermalComfort/    The brain: meteorology + descriptor banding
 Sources/WeatherData/       WeatherKit + location behind a protocol; offline cache
 App/                       The watch app (current conditions screen)
-Complication/              WidgetKit extension: Word + Icon complications
+Complication/              WidgetKit extension: the word complication
 Tests/                     Parity grid, focused unit tests, cache round-trip
 ```
 

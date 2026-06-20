@@ -50,7 +50,7 @@ public func describe(tempF: Double, dewpointF: Double) -> ComfortDescriptor {
 
     // Hot — 80–89°F (feels-like driven; dry air falls back to actual temp).
     if tempF < 90 {
-        if feels < 84 { return .warmBright }
+        if feels < 84 { return .warm }
         if feels < 90 {
             if dp < 62 { return .hot }
             if dp < 68 { return .muggy }

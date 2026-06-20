@@ -4,16 +4,16 @@ import Testing
 
 /// Replays every vector in `parity.csv` — the full integer grid of the spec's
 /// valid domain (−30…130°F × −40…temp dew point) — and asserts the Swift port
-/// produces the exact same word and emoji as the original reference. This is the
-/// safety net that lets the thresholds be retuned later with confidence: regen
-/// the fixture, watch the diff.
+/// produces the exact same word as the original reference. This is the safety net
+/// that lets the thresholds be retuned later with confidence: regen the fixture,
+/// watch the diff. (The fixture still carries the spec's original emoji column,
+/// now unused — the app no longer shows glyphs.)
 struct ParityTests {
 
     struct Vector {
         let tempF: Double
         let dewpointF: Double
         let word: String
-        let emoji: String
     }
 
     static func loadVectors() throws -> [Vector] {
@@ -32,8 +32,7 @@ struct ParityTests {
                 return Vector(
                     tempF: Double(f[0])!,
                     dewpointF: Double(f[1])!,
-                    word: String(f[2]),
-                    emoji: String(f[3])
+                    word: String(f[2])
                 )
             }
     }
@@ -45,9 +44,9 @@ struct ParityTests {
         var mismatches: [String] = []
         for v in vectors {
             let got = describe(tempF: v.tempF, dewpointF: v.dewpointF)
-            if got.word != v.word || got.emoji != v.emoji {
+            if got.word != v.word {
                 mismatches.append(
-                    "temp=\(v.tempF) dp=\(v.dewpointF): expected \(v.word)/\(v.emoji), got \(got.word)/\(got.emoji)"
+                    "temp=\(v.tempF) dp=\(v.dewpointF): expected \(v.word), got \(got.word)"
                 )
             }
         }
