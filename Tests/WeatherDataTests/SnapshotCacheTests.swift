@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import ThermalComfort
 @testable import WeatherData
 
 /// The cache is what keeps a complication from going blank when a live fetch fails,
@@ -54,5 +55,34 @@ struct SnapshotCacheTests {
         cache.save(latest)
 
         #expect(cache.load() == latest)
+    }
+
+    @Test func roundTripsPrecipitation() {
+        let (cache, _) = makeCache()
+        let snow = ComfortDescriptor(word: "Snow")
+        let saved = CachedReading(
+            snapshot: WeatherSnapshot(temperatureF: 34, dewpointF: 32, precipitation: snow, asOf: .now),
+            latitude: 37.7749,
+            longitude: -122.4194,
+            fetchedAt: .now
+        )
+
+        cache.save(saved)
+
+        #expect(cache.load() == saved)
+        #expect(cache.load()?.snapshot.precipitation == snow)
+    }
+
+    // A snapshot persisted before `precipitation` existed has no such key; it must
+    // still decode (as `.none`) rather than being dropped on upgrade.
+    @Test func decodesLegacySnapshotWithoutPrecipitation() throws {
+        let legacy = """
+        {"temperatureF":71.5,"dewpointF":64.2,"asOf":0}
+        """.data(using: .utf8)!
+
+        let snapshot = try JSONDecoder().decode(WeatherSnapshot.self, from: legacy)
+
+        #expect(snapshot.precipitation == nil)
+        #expect(snapshot.temperatureF == 71.5)
     }
 }

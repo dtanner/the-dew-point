@@ -11,6 +11,6 @@ struct ComfortEntry: TimelineEntry {
 
 extension ComfortEntry {
     /// Representative entry for the gallery, previews, and the redacted placeholder.
-    /// "Muggy" is chosen because both the word and a distinct symbol render clearly.
+    /// "Muggy" is a short, clearly readable word.
     static let sample = ComfortEntry(date: .now, descriptor: .muggy)
 }

@@ -39,7 +39,7 @@ struct ContentView: View {
     }
 }
 
-/// The hero view: the comfort word and its color emoji, with the underlying
+/// The hero view: the comfort (or precipitation) word, with the underlying
 /// numbers and required weather attribution beneath.
 private struct ConditionsView: View {
     let snapshot: WeatherSnapshot
@@ -47,11 +47,13 @@ private struct ConditionsView: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(descriptor.emoji)
-                .font(.system(size: 40))
             Text(descriptor.word)
-                .font(.title3.weight(.semibold))
-                .minimumScaleFactor(0.7)
+                .font(.title.weight(.semibold))
+                // Comfort words are single tokens; precipitation words can be two
+                // ("Scattered Thunderstorms"). Allow a second line and scale down
+                // before truncating so the longest still fit a 40mm face.
+                .lineLimit(2)
+                .minimumScaleFactor(0.6)
             Text("\(fahrenheit: snapshot.temperatureF) · dew \(fahrenheit: snapshot.dewpointF)")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -117,6 +119,14 @@ private extension String.StringInterpolation {
     ConditionsView(
         snapshot: WeatherSnapshot(temperatureF: 70, dewpointF: 64, asOf: .now),
         descriptor: describe(tempF: 70, dewpointF: 64)
+    )
+}
+
+#Preview("Precipitation") {
+    let storm = ComfortDescriptor(word: "Scattered Thunderstorms")
+    return ConditionsView(
+        snapshot: WeatherSnapshot(temperatureF: 72, dewpointF: 66, precipitation: storm, asOf: .now),
+        descriptor: storm
     )
 }
 

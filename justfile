@@ -27,11 +27,7 @@ build:
 generate:
     xcodegen generate
 
-# Render the complication SF Symbols to PNGs for COMFORT_TABLE.md (macOS only).
-symbols:
-    swift Scripts/render-symbols.swift
-
-# Render the Word + Icon complications to a PNG for the README (macOS only).
+# Render the word complication to a PNG for the README (macOS only).
 complications:
     swift Scripts/render-complications.swift
 

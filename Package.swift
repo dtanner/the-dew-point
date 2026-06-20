@@ -19,9 +19,11 @@ let package = Package(
     targets: [
         .target(name: "ThermalComfort"),
         // The data layer: turns location into current temperature + dew point via
-        // WeatherKit, behind a protocol so the UI can be driven by fakes. Kept
-        // separate from ThermalComfort so the engine stays dependency-free.
-        .target(name: "WeatherData"),
+        // WeatherKit, behind a protocol so the UI can be driven by fakes. Depends on
+        // ThermalComfort to reuse `ComfortDescriptor` for the precipitation override
+        // carried on `WeatherSnapshot`; the dependency direction stays data-layer →
+        // engine, so the engine itself remains free of WeatherKit/UI deps.
+        .target(name: "WeatherData", dependencies: ["ThermalComfort"]),
         .testTarget(
             name: "ThermalComfortTests",
             dependencies: ["ThermalComfort"],
@@ -29,6 +31,6 @@ let package = Package(
             // ParityTests for how these lock the Swift port to the spec.
             resources: [.copy("Fixtures/parity.csv")]
         ),
-        .testTarget(name: "WeatherDataTests", dependencies: ["WeatherData"]),
+        .testTarget(name: "WeatherDataTests", dependencies: ["WeatherData", "ThermalComfort"]),
     ]
 )

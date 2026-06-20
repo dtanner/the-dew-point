@@ -25,7 +25,7 @@ final class ConditionsModel {
         phase = .loading
         do {
             let snapshot = try await provider.currentSnapshot()
-            let descriptor = describe(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+            let descriptor = snapshot.precipitation ?? describe(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
             phase = .loaded(snapshot, descriptor)
             // The provider cached this reading + its coordinate; nudge the
             // complications so opening the app refreshes them right away too.
