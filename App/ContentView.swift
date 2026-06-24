@@ -55,10 +55,24 @@ private struct ConditionsView: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            wordLabel
+            Text(descriptor.word)
+                .font(.title.weight(.semibold))
+                // Comfort words are single tokens; precipitation words can be two
+                // ("Scattered Thunderstorms"). Allow a second line and scale down
+                // before truncating so the longest still fit a 40mm face.
+                .lineLimit(2)
+                .minimumScaleFactor(0.6)
             Text("\(fahrenheit: snapshot.temperatureF) · dew \(fahrenheit: snapshot.dewpointF)")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+            // No comfort band while precipitation is showing, so nothing to customize.
+            if isCustomizable {
+                Button(isCustomized ? "Edit word" : "Customize") { editing = true }
+                    .font(.caption2)
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .padding(.top, 4)
+            }
             AttributionView()
                 .padding(.top, 2)
         }
@@ -71,28 +85,6 @@ private struct ConditionsView: View {
                 onReset: { model.removeCustomization(for: snapshot) }
             )
         }
-    }
-
-    // Tap the word to customize it. watchOS has no Force Touch, so the old long-press
-    // context menu is out; a tap opens the editor sheet, which also offers reset.
-    // While precipitation is showing there's no comfort band, so the word is inert.
-    @ViewBuilder private var wordLabel: some View {
-        if isCustomizable {
-            Button { editing = true } label: { styledWord }
-                .buttonStyle(.plain)
-        } else {
-            styledWord
-        }
-    }
-
-    private var styledWord: some View {
-        Text(descriptor.word)
-            .font(.title.weight(.semibold))
-            // Comfort words are single tokens; precipitation words can be two
-            // ("Scattered Thunderstorms"). Allow a second line and scale down before
-            // truncating so the longest still fit a 40mm face.
-            .lineLimit(2)
-            .minimumScaleFactor(0.6)
     }
 }
 
