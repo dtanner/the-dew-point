@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dew Point — Design Your Comfort Words</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2027;
+    --panel2: #232b34;
+    --line: #2e3742;
+    --text: #e6edf3;
+    --muted: #9aa7b4;
+    --accent: #4aa3ff;
+    --danger: #ff6b6b;
+    --warn: #ffcc66;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 16px; margin: 0; }
+  header .sub { color: var(--muted); font-size: 12px; }
+  .layout { display: grid; grid-template-columns: minmax(420px, 500px) 1fr; gap: 0; align-items: start; }
+  @media (max-width: 940px) { .layout { grid-template-columns: 1fr; } }
+  .col { padding: 16px 20px; }
+  .col.editor { border-right: 1px solid var(--line); }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; }
+
+  .band {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .band-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    background: var(--panel2);
+    cursor: pointer;
+    flex-wrap: wrap;
+  }
+  .band-head .label-in { font-weight: 600; }
+  .band-head .range { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; }
+  .band-head .band-actions { margin-left: auto; display: flex; gap: 3px; }
+  .band-body { padding: 8px 10px; display: none; }
+  .band.open .band-body { display: block; }
+  .band-head .chev { color: var(--muted); transition: transform .12s; }
+  .band.open .chev { transform: rotate(90deg); }
+
+  .rule {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .rule:last-child { border-bottom: none; }
+  .rule .kw { color: var(--muted); font-size: 12px; }
+  .preds { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .pred { display: inline-flex; gap: 3px; align-items: center; background: #11161c; border: 1px solid var(--line); border-radius: 5px; padding: 2px 4px; }
+  .pred-and { color: var(--muted); font-size: 11px; }
+  select, input {
+    background: #0c1116;
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 3px 5px;
+    font: inherit;
+    font-size: 12px;
+  }
+  input.num { width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
+  input.word { width: 96px; }
+  input.label-in { width: 96px; }
+  input.expr { width: 60px; }
+  .word-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+  button {
+    background: var(--panel2);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 4px 9px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+  }
+  button:hover { border-color: var(--accent); }
+  button:disabled { opacity: .35; cursor: default; }
+  button.icon { padding: 2px 6px; line-height: 1; }
+  button.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .rule-actions { margin-left: auto; display: flex; gap: 4px; }
+  .band-foot { margin-top: 6px; display: flex; gap: 6px; }
+  .arrow { color: var(--muted); }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  .coverage { font-size: 12px; margin: 0 0 12px; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--line); }
+  .coverage.ok { color: #8fdf9f; border-color: #2f5135; background: #16241a; }
+  .coverage.bad { color: var(--warn); border-color: #5a4a25; background: #241f12; }
+  .coverage ul { margin: 4px 0 0; padding-left: 18px; }
+
+  /* Grid */
+  .grid-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table.grid { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  table.grid th, table.grid td { text-align: center; white-space: nowrap; }
+  table.grid th { background: var(--panel2); color: var(--muted); font-weight: 600; font-size: 11px; padding: 4px 5px; position: sticky; }
+  table.grid thead th { top: 0; z-index: 2; }
+  table.grid tbody th { left: 0; z-index: 1; }
+  table.grid thead th:first-child { left: 0; z-index: 3; }
+  table.grid td {
+    padding: 0;
+    width: 30px; height: 26px;
+    font-size: 10px;
+    color: #0b0e12;
+    font-weight: 600;
+    cursor: default;
+    border: 1px solid rgba(0,0,0,.15);
+  }
+  table.grid td.unphysical { opacity: .28; }
+  table.grid td.uncovered { background: repeating-linear-gradient(45deg,#3a2030,#3a2030 4px,#2a1622 4px,#2a1622 8px) !important; color: #ffb0b0; }
+  .axis-label { color: var(--muted); font-size: 12px; margin: 4px 0; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .legend .item { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 3px 7px; }
+
+  .controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field label { font-size: 11px; color: var(--muted); }
+  .field input { width: 64px; }
+
+  textarea {
+    width: 100%; min-height: 220px; background: #0c1116; color: var(--text);
+    border: 1px solid var(--line); border-radius: 6px; padding: 8px;
+    font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .hint { color: var(--muted); font-size: 12px; margin: 6px 0; }
+  .intro { padding: 14px 20px; border-bottom: 1px solid var(--line); background: #131a21; font-size: 13px; line-height: 1.5; }
+  .intro h2 { color: var(--text); text-transform: none; letter-spacing: 0; font-size: 14px; margin: 0 0 6px; }
+  .intro ol { margin: 6px 0; padding-left: 20px; }
+  .intro li { margin: 3px 0; }
+  .intro .tipbox { margin-top: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid #2f4a5a; background: #122430; color: #bfe0f0; }
+  .intro code { background: #0c1116; border: 1px solid var(--line); border-radius: 4px; padding: 1px 4px; }
+  .namebar { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--line); }
+  .namebar label { color: var(--muted); font-size: 12px; }
+  .namebar input { width: 200px; }
+  .tip { position: fixed; pointer-events: none; background: #000; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 12px; z-index: 50; display: none; max-width: 250px; }
+  .tip b { color: var(--accent); }
+  details.io { margin-top: 14px; }
+  details.io summary { cursor: pointer; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Dew Point · Design Your Comfort Words</h1>
+  <span class="sub">Help me name how the weather feels.</span>
+</header>
+
+<div class="intro">
+  <h2>What is this?</h2>
+  <p>I'm building a little watch app that shows a single word for how it feels outside (like <b>Crisp</b>, <b>Muggy</b>, or <b>Raw</b>) based on the temperature and humidity. I want your take on where the lines should be and what to call each zone — there are no wrong answers, it's about how <i>you</i> experience weather.</p>
+  <ol>
+    <li><b>Edit the bands on the left.</b> Each temperature range has rules that pick a word. Change the cutoffs, rename the words, add or remove zones — make it match how you'd describe the weather.</li>
+    <li><b>Watch the grid on the right.</b> It updates live: columns are humidity, rows are temperature, each cell shows the word your rules produce. Hover a cell for details.</li>
+    <li><b>Send it back to me.</b> Put your name in the box below, click <b>Download JSON</b> at the bottom right (or <b>Copy to clipboard</b>), and Slack me the file or pasted text.</li>
+  </ol>
+  <div class="tipbox">
+    💡 <b>Rule of thumb:</b> below about <b>65°F</b>, use <b>Relative Humidity (rh)</b> in your rules — when it's cool, damp air feels raw and dry air feels crisp, and humidity captures that best. At <b>65°F and above</b>, use <b>Dew Point (dp)</b> — when it's warm, dew point is what makes air feel sticky or muggy. Each band has a <b>“by dp / rh”</b> toggle in its header that picks which one all of that band's rules use, so you only ever think about one number per band. Your edits auto-save in this browser, so you can close the tab and come back.
+  </div>
+</div>
+
+<div class="namebar">
+  <label for="author">Your name (so I know whose is whose):</label>
+  <input id="author" class="word" type="text" placeholder="e.g. Sam" />
+</div>
+
+<div class="layout">
+  <div class="col editor">
+    <h2>Temperature bands (cold → hot)</h2>
+    <div class="toolbar">
+      <button id="expandAll">Expand all</button>
+      <button id="collapseAll">Collapse all</button>
+      <button id="addBand">+ Add band</button>
+      <button id="sortBands">Sort by temp</button>
+      <button id="resetBtn" class="danger">Start over</button>
+    </div>
+    <div id="coverage" class="coverage ok"></div>
+    <div id="bands"></div>
+
+    <details class="io">
+      <summary>Import / paste a config JSON</summary>
+      <p class="hint">Paste a config here and click Load to edit it.</p>
+      <textarea id="importBox" placeholder='Paste config JSON…'></textarea>
+      <div style="margin-top:6px"><button id="importBtn">Load into editor</button></div>
+    </details>
+  </div>
+
+  <div class="col preview">
+    <h2>Live preview</h2>
+    <div class="controls">
+      <div class="field"><label>Temp min</label><input id="tMin" class="num" type="number" value="15"></div>
+      <div class="field"><label>Temp max</label><input id="tMax" class="num" type="number" value="105"></div>
+      <div class="field"><label>Temp step</label><input id="tStep" class="num" type="number" value="5"></div>
+      <div class="field"><label>Dew min</label><input id="dMin" class="num" type="number" value="10"></div>
+      <div class="field"><label>Dew max</label><input id="dMax" class="num" type="number" value="80"></div>
+      <div class="field"><label>Dew step</label><input id="dStep" class="num" type="number" value="5"></div>
+    </div>
+    <div class="axis-label">Columns = dew point °F · Rows = temperature °F (dew point clamped to temp; unphysical cells dimmed; hatched = no band matched)</div>
+    <div class="grid-wrap"><table class="grid" id="grid"></table></div>
+    <div class="legend" id="legend"></div>
+
+    <details class="io" open>
+      <summary>Send your design back to me</summary>
+      <p class="hint">Download the file (or copy the text) and Slack it to me. Add your name above first so I know whose is whose.</p>
+      <div style="margin:6px 0">
+        <button id="downloadBtn">⬇ Download JSON</button>
+        <button id="copyBtn">Copy to clipboard</button>
+        <span id="copyMsg" class="hint"></span>
+      </div>
+      <textarea id="exportBox" readonly></textarea>
+    </details>
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Meteorology — relative humidity from temperature + dew point (Magnus formula).
+// ---------------------------------------------------------------------------
+const Meteorology = {
+  relativeHumidity(tempF, dewpointF) {
+    const t = (tempF - 32) * 5 / 9;
+    const d = (dewpointF - 32) * 5 / 9;
+    const rh = 100 * Math.exp(17.625 * d / (243.04 + d)) / Math.exp(17.625 * t / (243.04 + t));
+    return Math.min(100, Math.max(0, rh));
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Starting config friends edit. Temperature lives at the band level; rules
+// inside a band test dew point (dp) or relative humidity (rh) only.
+// Each band: { label, tempMin (inclusive; null = open bottom),
+//                     tempMax (exclusive; null = open top), rules:[] }.
+// Each rule: { preds:[{var,op,value}], word }.  preds are AND-ed; evaluated in
+// order; empty preds = always-true default. Vars: dp, rh. `value` is a number.
+// ---------------------------------------------------------------------------
+function defaultConfig() {
+  const r = (word, ...preds) => ({ word, preds });
+  const p = (v, op, value) => ({ var: v, op, value });
+  return [
+    { label: "Bitter",   tempMin: null, tempMax: 20,  axis: "rh", rules: [ r("Bitter") ] },
+    { label: "Freezing", tempMin: 20,   tempMax: 32,  axis: "rh", rules: [ r("Raw", p("rh", ">", 85)), r("Freezing") ] },
+    // Cold + Cool key off humidity only (it's cool enough that damp vs. dry is what you feel).
+    { label: "Cold",     tempMin: 32,   tempMax: 50,  axis: "rh", rules: [
+        r("Raw",   p("rh", ">", 85)),
+        r("Crisp", p("rh", "<", 55)),
+        r("Cold") ] },
+    { label: "Cool",     tempMin: 50,   tempMax: 65,  axis: "rh", rules: [
+        r("Clammy",      p("rh", ">", 88)),
+        r("Damp",        p("rh", ">", 80)),
+        r("Comfortable", p("rh", ">", 58)),
+        r("Brisk",       p("rh", ">", 45)),
+        r("Crisp") ] },
+    // From here up it's warm enough that dew point drives the sticky/muggy feel.
+    { label: "Mild",     tempMin: 65,   tempMax: 75,  axis: "dp", rules: [
+        r("Pleasant",    p("dp", "<", 50)),
+        r("Comfortable", p("dp", "<", 57)),
+        r("Sticky",      p("dp", "<", 63)),
+        r("Muggy") ] },
+    { label: "Warm",     tempMin: 75,   tempMax: 80,  axis: "dp", rules: [
+        r("Balmy",      p("dp", "<", 48)),
+        r("Warm",       p("dp", "<", 57)),
+        r("Sticky",     p("dp", "<", 63)),
+        r("Muggy",      p("dp", "<", 70)),
+        r("Oppressive") ] },
+    { label: "Hot",      tempMin: 80,   tempMax: 90,  axis: "dp", rules: [
+        r("Warm",       p("dp", "<", 55)),
+        r("Hot",        p("dp", "<", 62)),
+        r("Muggy",      p("dp", "<", 68)),
+        r("Oppressive", p("dp", "<", 73)),
+        r("Miserable") ] },
+    { label: "Very Hot", tempMin: 90,   tempMax: 100, axis: "dp", rules: [
+        r("Dry Heat",   p("dp", "<", 45)),
+        r("Hot",        p("dp", "<", 55)),
+        r("Sweltering", p("dp", "<", 63)),
+        r("Miserable",  p("dp", "<", 68)),
+        r("Dangerous") ] },
+    { label: "Extreme",  tempMin: 100,  tempMax: null, axis: "dp", rules: [
+        r("Scorching", p("dp", "<", 48)),
+        r("Dangerous", p("dp", "<", 60)),
+        r("Deadly") ] },
+  ];
+}
+
+// The variable every rule in a band tests. Stored on the band so all rules
+// share one axis — no mixing dew point and humidity within a band.
+function bandAxis(band) { return band.axis === "rh" ? "rh" : "dp"; }
+
+// Enforce the tool's invariants on any config that didn't come from this tool
+// (localStorage from an older build, or a hand-edited/imported JSON): every band
+// has a single axis, and every rule has at most one predicate on that axis.
+function normalizeConfig(cfg) {
+  if (!Array.isArray(cfg)) return defaultConfig();
+  for (const band of cfg) {
+    const axis = bandAxis(band);
+    band.axis = axis;
+    for (const rule of band.rules || []) {
+      rule.preds = (rule.preds || []).slice(0, 1).map(p => ({ ...p, var: axis }));
+    }
+  }
+  return cfg;
+}
+
+function newBand(tempMin = null, tempMax = null) {
+  return { label: "New band", tempMin, tempMax, axis: "dp", rules: [{ word: "New", preds: [] }] };
+}
+
+// Catalog order for stable cold→hot coloring.
+const CATALOG = ["Bitter","Raw","Freezing","Crisp","Cold","Clammy","Brisk",
+  "Comfortable","Damp","Pleasant","Sticky","Muggy","Balmy","Warm","Oppressive",
+  "Hot","Sweltering","Miserable","Dry Heat","Dangerous","Scorching","Deadly"];
+
+function hashHue(str) { let h = 0; for (const c of str) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+function colorFor(word) {
+  const i = CATALOG.indexOf(word);
+  if (i >= 0) {
+    const hue = 220 - (i / (CATALOG.length - 1)) * 220; // blue→red
+    return `hsl(${hue}, 70%, 62%)`;
+  }
+  return `hsl(${hashHue(word)}, 45%, 65%)`; // custom words: muted, distinct
+}
+
+// ---------------------------------------------------------------------------
+// Evaluation — mirrors describe(): clamp dp, compute rh, pick the band
+// whose [tempMin, tempMax) contains t, walk its rules in order.
+// ---------------------------------------------------------------------------
+function bandContains(b, t) {
+  return (b.tempMin === null || t >= b.tempMin) && (b.tempMax === null || t < b.tempMax);
+}
+function evalValue(value, env) {
+  if (typeof value === "number") return value;
+  const n = Number(value);
+  if (!isNaN(n) && value.trim() !== "") return n;
+  try { return Function("dp", "rh", "return (" + value + ")")(env.dp, env.rh); }
+  catch { return NaN; }
+}
+function predTrue(pred, env) {
+  const left = env[pred.var];
+  const right = evalValue(pred.value, env);
+  if (isNaN(right)) return false;
+  return pred.op === "<" ? left < right
+       : pred.op === ">" ? left > right
+       : pred.op === "<=" ? left <= right
+       : pred.op === ">=" ? left >= right
+       : pred.op === "==" ? left === right
+       : false;
+}
+function describe(config, tempF, dewpointF) {
+  const dp = Math.min(dewpointF, tempF);
+  const rh = Meteorology.relativeHumidity(tempF, dp);
+  const env = { t: tempF, dp, rh };
+  const band = config.find(b => bandContains(b, tempF));
+  if (!band) return { word: null, band: null, env, uncovered: true };
+  for (const rule of band.rules) {
+    if (rule.preds.every(pr => predTrue(pr, env))) return { word: rule.word, band: band.label, env };
+  }
+  return { word: null, band: band.label, env, nomatch: true };
+}
+
+// ---------------------------------------------------------------------------
+// State + rendering
+// ---------------------------------------------------------------------------
+// Persistence — keep the friend's work across refreshes / closing the tab.
+const STORE_KEY = "dewpoint-comfort-config";
+const NAME_KEY  = "dewpoint-comfort-author";
+function loadConfig() {
+  try { const s = localStorage.getItem(STORE_KEY); if (s) return normalizeConfig(JSON.parse(s)); } catch {}
+  return defaultConfig();
+}
+function saveConfig() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(config)); } catch {}
+}
+
+let config = loadConfig();
+const $ = sel => document.querySelector(sel);
+const el = (tag, props = {}, kids = []) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v == null) continue;
+    if (k === "class") n.className = v;
+    else if (k === "html") n.innerHTML = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const kid of [].concat(kids)) if (kid != null) n.append(kid);
+  return n;
+};
+
+// Only the two axes friends design with: dew point and relative humidity.
+// Temperature lives at the band level, not inside a rule.
+const VARS = ["dp", "rh"];
+const OPS = ["<", ">", "<=", ">=", "=="];
+
+function boundInput(getVal, setVal, placeholder, title) {
+  return el("input", { class: "num", type: "number", value: getVal() ?? "", placeholder, title,
+    oninput: e => { setVal(e.target.value === "" ? null : Number(e.target.value)); refresh(); } });
+}
+
+function renderBands() {
+  const root = $("#bands");
+  const openState = [...root.querySelectorAll(".band")].map(b => b.classList.contains("open"));
+  root.innerHTML = "";
+  config.forEach((band, bi) => {
+    const head = el("div", { class: "band-head", onclick: e => {
+      if (e.target.closest("input,button,select")) return;
+      card.classList.toggle("open");
+    }}, [
+      el("span", { class: "chev", html: "▶" }),
+      el("input", { class: "label-in", value: band.label, title: "Band name (display only)",
+        oninput: e => { band.label = e.target.value; } }),
+      el("span", { class: "range" }, [
+        boundInput(() => band.tempMin, v => band.tempMin = v, "−∞", "Lower temp bound (inclusive). Blank = open / no lower limit."),
+        document.createTextNode("≤ t <"),
+        boundInput(() => band.tempMax, v => band.tempMax = v, "+∞", "Upper temp bound (exclusive). Blank = open / no upper limit."),
+        document.createTextNode("°F"),
+      ]),
+      el("span", { class: "range" }, [
+        document.createTextNode("by"),
+        select(["dp", "rh"], bandAxis(band), v => {
+          band.axis = v;
+          // Keep every rule on the band's single axis.
+          band.rules.forEach(rule => rule.preds.forEach(pr => pr.var = v));
+          refreshRules();
+        }),
+      ]),
+      el("span", { class: "band-actions" }, [
+        el("button", { class: "icon", title: "Insert band above",
+          onclick: () => { config.splice(bi, 0, newBand(null, band.tempMin)); fullRender(); } }, "＋▲"),
+        el("button", { class: "icon", title: "Move band up", disabled: bi === 0 ? "" : null,
+          onclick: () => { if (bi > 0) { [config[bi-1], config[bi]] = [config[bi], config[bi-1]]; fullRender(); } } }, "↑"),
+        el("button", { class: "icon", title: "Move band down", disabled: bi === config.length - 1 ? "" : null,
+          onclick: () => { if (bi < config.length - 1) { [config[bi+1], config[bi]] = [config[bi], config[bi+1]]; fullRender(); } } }, "↓"),
+        el("button", { class: "icon danger", title: "Delete band",
+          onclick: () => { config.splice(bi, 1); fullRender(); } }, "✕"),
+      ]),
+    ]);
+
+    const body = el("div", { class: "band-body" });
+    band.rules.forEach((rule, ri) => body.append(renderRule(band, rule, ri)));
+    body.append(el("div", { class: "band-foot" }, [
+      el("button", { onclick: () => {
+        // Insert before the trailing default (if any) so the default stays last.
+        const hasDefault = band.rules.length && band.rules[band.rules.length - 1].preds.length === 0;
+        band.rules.splice(hasDefault ? band.rules.length - 1 : band.rules.length, 0,
+          { word: "New", preds: [{ var: bandAxis(band), op: "<", value: 0 }] });
+        refreshRules();
+      } }, "+ Add rule"),
+    ]));
+
+    const card = el("div", { class: "band" + (openState[bi] !== false ? " open" : "") }, [head, body]);
+    root.append(card);
+  });
+}
+
+// Re-render bands + grid after a rule-level change (keeps open/closed state).
+function refreshRules() { renderBands(); refresh(); }
+
+function renderRule(band, rule, ri) {
+  const isDefault = rule.preds.length === 0;
+  const preds = el("div", { class: "preds" });
+  if (isDefault) {
+    preds.append(el("span", { class: "kw" }, "otherwise"));
+  } else {
+    // One predicate per rule. With a single band axis and ordered first-match
+    // rules, a lower/upper bound plus the rule order expresses every range — so
+    // there's no AND to combine conditions. Axis is fixed at the band level.
+    const pred = rule.preds[0];
+    pred.var = bandAxis(band);
+    preds.append(el("span", { class: "pred" }, [
+      el("span", { class: "kw", title: "Set the band's variable in its header" }, pred.var),
+      select(OPS, pred.op, v => { pred.op = v; refresh(); }),
+      el("input", { class: "expr", value: pred.value,
+        title: "Threshold value, e.g. 60",
+        oninput: e => { const n = Number(e.target.value); pred.value = (!isNaN(n) && e.target.value.trim() !== "") ? n : e.target.value; refresh(); } }),
+    ]));
+  }
+
+  const actions = el("div", { class: "rule-actions" }, [
+    el("button", { class: "icon", title: "Move up", disabled: ri === 0 ? "" : null,
+      onclick: () => { if (ri > 0) { [band.rules[ri-1], band.rules[ri]] = [band.rules[ri], band.rules[ri-1]]; refreshRules(); } } }, "↑"),
+    el("button", { class: "icon", title: "Move down", disabled: ri === band.rules.length - 1 ? "" : null,
+      onclick: () => { if (ri < band.rules.length - 1) { [band.rules[ri+1], band.rules[ri]] = [band.rules[ri], band.rules[ri+1]]; refreshRules(); } } }, "↓"),
+    el("button", { class: "icon danger", title: "Delete rule",
+      onclick: () => { band.rules.splice(ri, 1); refreshRules(); } }, "✕"),
+  ]);
+
+  return el("div", { class: "rule" }, [
+    el("span", { class: "kw" }, isDefault ? "" : "if"),
+    preds,
+    el("span", { class: "arrow" }, "→"),
+    el("span", { class: "word-swatch", style: `background:${colorFor(rule.word)}` }),
+    el("input", { class: "word", value: rule.word, title: "Resulting word",
+      oninput: e => { rule.word = e.target.value; refresh(); } }),
+    actions,
+  ]);
+}
+
+function select(opts, value, onchange) {
+  const s = el("select", { onchange: e => onchange(e.target.value) });
+  for (const o of opts) s.append(el("option", value === o ? { value: o, selected: "" } : { value: o }, o));
+  return s;
+}
+
+// Check the bands tile the temperature line with no gaps/overlaps.
+function renderCoverage() {
+  const box = $("#coverage");
+  const issues = [];
+  const sorted = [...config].map((b, i) => ({ b, i }))
+    .sort((x, y) => (x.b.tempMin ?? -Infinity) - (y.b.tempMin ?? -Infinity));
+  for (const { b, i } of sorted) {
+    if (b.tempMin !== null && b.tempMax !== null && b.tempMin >= b.tempMax)
+      issues.push(`“${b.label}” has an empty/inverted range (${b.tempMin} ≤ t < ${b.tempMax}).`);
+  }
+  for (let k = 0; k < sorted.length - 1; k++) {
+    const cur = sorted[k].b, nxt = sorted[k + 1].b;
+    const curHi = cur.tempMax, nxtLo = nxt.tempMin;
+    if (curHi === null || nxtLo === null) continue;
+    if (curHi < nxtLo) issues.push(`Gap between “${cur.label}” and “${nxt.label}”: ${curHi}–${nxtLo}°F maps to no band.`);
+    else if (curHi > nxtLo) issues.push(`Overlap between “${cur.label}” and “${nxt.label}”: ${nxtLo}–${curHi}°F (first listed wins).`);
+  }
+  if (issues.length === 0) {
+    box.className = "coverage ok";
+    box.textContent = "✓ Bands tile the temperature line with no gaps or overlaps.";
+  } else {
+    box.className = "coverage bad";
+    box.innerHTML = "⚠ Coverage issues:" + "<ul>" + issues.map(i => `<li>${i}</li>`).join("") + "</ul>";
+  }
+}
+
+function renderGrid() {
+  const tMin = +$("#tMin").value, tMax = +$("#tMax").value, tStep = +$("#tStep").value || 5;
+  const dMin = +$("#dMin").value, dMax = +$("#dMax").value, dStep = +$("#dStep").value || 5;
+  const dews = []; for (let d = dMin; d <= dMax; d += dStep) dews.push(d);
+  const temps = []; for (let t = tMax; t >= tMin; t -= tStep) temps.push(t); // hottest on top
+
+  const grid = $("#grid");
+  grid.innerHTML = "";
+  const thead = el("thead");
+  const hrow = el("tr", {}, [el("th", {}, "t \\ dp")]);
+  dews.forEach(d => hrow.append(el("th", {}, String(d))));
+  thead.append(hrow);
+  grid.append(thead);
+
+  const tbody = el("tbody");
+  const used = new Set();
+  temps.forEach(t => {
+    const row = el("tr", {}, [el("th", {}, String(t))]);
+    dews.forEach(d => {
+      const res = describe(config, t, d);
+      let cls = d > t ? "unphysical" : "";
+      let cell;
+      if (res.uncovered) {
+        cell = el("td", { class: cls + " uncovered" }, "·");
+      } else if (res.word === null) {
+        cell = el("td", { class: cls, style: "background:#444" }, "?");
+      } else {
+        used.add(res.word);
+        cell = el("td", { class: cls, style: `background:${colorFor(res.word)}` }, abbr(res.word));
+      }
+      cell.addEventListener("mousemove", ev => showTip(ev, t, d, res));
+      cell.addEventListener("mouseleave", hideTip);
+      row.append(cell);
+    });
+    tbody.append(row);
+  });
+  grid.append(tbody);
+
+  const legend = $("#legend");
+  legend.innerHTML = "";
+  const ordered = [...used].sort((a, b) => {
+    const ia = CATALOG.indexOf(a), ib = CATALOG.indexOf(b);
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+  });
+  ordered.forEach(w => legend.append(el("span", { class: "item" }, [
+    el("span", { class: "word-swatch", style: `background:${colorFor(w)}` }), w,
+  ])));
+}
+
+function abbr(word) {
+  if (word.includes(" ")) return word.split(" ").map(s => s[0]).join("");
+  return word.slice(0, 4);
+}
+
+const tip = $("#tip");
+function showTip(ev, t, d, res) {
+  const e = res.env;
+  const head = res.uncovered ? "<b>no band</b> covers this temp"
+            : res.word === null ? `<b>no rule matched</b> · ${res.band}`
+            : `<b>${res.word}</b> · ${res.band}`;
+  tip.innerHTML = head + "<br>" +
+    `temp ${t}°F · dew ${d}°F${d > t ? " (clamped to " + t + ")" : ""}<br>` +
+    `RH ${e.rh.toFixed(0)}%`;
+  tip.style.display = "block";
+  tip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 260) + "px";
+  tip.style.top = (ev.clientY + 14) + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+
+function renderExport() {
+  $("#exportBox").value = JSON.stringify(config, null, 2);
+}
+
+function refresh() {
+  renderCoverage();
+  renderGrid();
+  renderExport();
+  saveConfig();
+}
+function fullRender() {
+  renderBands();
+  refresh();
+}
+
+// ---------------------------------------------------------------------------
+// Wire-up
+// ---------------------------------------------------------------------------
+$("#expandAll").onclick   = () => document.querySelectorAll(".band").forEach(b => b.classList.add("open"));
+$("#collapseAll").onclick = () => document.querySelectorAll(".band").forEach(b => b.classList.remove("open"));
+$("#addBand").onclick = () => {
+  // Append a band starting where the current highest one ends.
+  const hi = config.reduce((m, b) => (b.tempMax !== null && (m === null || b.tempMax > m)) ? b.tempMax : m, null);
+  config.push(newBand(hi, null));
+  fullRender();
+};
+$("#sortBands").onclick = () => {
+  config.sort((a, b) => (a.tempMin ?? -Infinity) - (b.tempMin ?? -Infinity));
+  fullRender();
+};
+$("#resetBtn").onclick = () => {
+  if (confirm("Start over? This permanently discards ALL your edits and restores the original starting bands. This can't be undone.")) {
+    config = defaultConfig();
+    try { localStorage.removeItem(STORE_KEY); } catch {}
+    fullRender();
+  }
+};
+
+// Author name — remembered across refreshes, used to name the downloaded file.
+const authorInput = $("#author");
+try { authorInput.value = localStorage.getItem(NAME_KEY) || ""; } catch {}
+authorInput.addEventListener("input", () => {
+  try { localStorage.setItem(NAME_KEY, authorInput.value); } catch {}
+});
+
+$("#downloadBtn").onclick = () => {
+  const safe = (authorInput.value.trim() || "anon").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+  const blob = new Blob([$("#exportBox").value], { type: "application/json" });
+  const a = el("a", { href: URL.createObjectURL(blob), download: `comfort-bands-${safe}.json` });
+  document.body.append(a); a.click(); a.remove();
+};
+["#tMin","#tMax","#tStep","#dMin","#dMax","#dStep"].forEach(id => $(id).addEventListener("input", renderGrid));
+$("#copyBtn").onclick = async () => {
+  try { await navigator.clipboard.writeText($("#exportBox").value); $("#copyMsg").textContent = "Copied ✓"; }
+  catch { $("#exportBox").select(); document.execCommand("copy"); $("#copyMsg").textContent = "Copied ✓"; }
+  setTimeout(() => $("#copyMsg").textContent = "", 1500);
+};
+$("#importBtn").onclick = () => {
+  try {
+    const parsed = JSON.parse($("#importBox").value);
+    if (!Array.isArray(parsed)) throw new Error("Expected an array of bands");
+    // Back-compat: if a band omits tempMin, derive it from the previous band's tempMax.
+    let prevMax = null;
+    config = parsed.map((b, i) => {
+      const tempMin = (b.tempMin !== undefined) ? b.tempMin : (i === 0 ? null : prevMax);
+      prevMax = b.tempMax ?? null;
+      // Axis: honor an explicit band.axis, else infer from the first predicate, else dp.
+      const firstVar = (b.rules || []).flatMap(r => r.preds || []).map(p => p.var)
+        .find(v => v === "dp" || v === "rh");
+      const axis = (b.axis === "dp" || b.axis === "rh") ? b.axis : (firstVar || "dp");
+      return { label: b.label ?? "", tempMin: tempMin ?? null, tempMax: b.tempMax ?? null, axis,
+        rules: (b.rules || []).map(r => ({ word: r.word ?? "",
+          // Keep at most one predicate, forced onto the band axis, so an imported
+          // config can't reintroduce AND conditions or cross-axis mixing.
+          preds: (r.preds || []).slice(0, 1).map(p => ({ ...p, var: axis })) })) };
+    });
+    fullRender();
+  } catch (e) { alert("Could not parse config: " + e.message); }
+};
+
+fullRender();
+</script>
+</body>
+</html>
