@@ -59,9 +59,11 @@ struct ComfortProvider: TimelineProvider {
     }
 
     private static func entry(for snapshot: WeatherSnapshot) -> ComfortEntry {
+        // Resolve through the shared store so the complication honors the user's
+        // per-band custom words exactly as the app does.
         ComfortEntry(
             date: snapshot.asOf,
-            descriptor: snapshot.precipitation ?? describe(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+            descriptor: snapshot.precipitation ?? CustomizationStore().resolvedDescriptor(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
         )
     }
 }
