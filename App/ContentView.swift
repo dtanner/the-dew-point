@@ -40,7 +40,7 @@ struct ContentView: View {
 }
 
 /// The hero view: the comfort (or precipitation) word, with the underlying
-/// numbers and required weather attribution beneath.
+/// numbers beneath. Weather attribution lives in the Customize sheet.
 private struct ConditionsView: View {
     let snapshot: WeatherSnapshot
     let descriptor: ComfortDescriptor
@@ -56,25 +56,26 @@ private struct ConditionsView: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(descriptor.word)
-                .font(.title.weight(.semibold))
+                .font(.title2.weight(.semibold))
                 // Comfort words are single tokens; precipitation words can be two
                 // ("Scattered Thunderstorms"). Allow a second line and scale down
                 // before truncating so the longest still fit a 40mm face.
                 .lineLimit(2)
                 .minimumScaleFactor(0.6)
+                // Take the full face width so a single long word ("Comfortable")
+                // keeps one line instead of wrapping to the sibling buttons' width.
+                .frame(maxWidth: .infinity)
             Text("\(fahrenheit: snapshot.temperatureF) · dew \(fahrenheit: snapshot.dewpointF)")
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
             // No comfort band while precipitation is showing, so nothing to customize.
             if isCustomizable {
                 Button(isCustomized ? "Edit word" : "Customize") { editing = true }
                     .font(.caption2)
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .padding(.top, 4)
+                    .buttonStyle(.borderless)
+                    .tint(.accentColor)
+                    .padding(.top, 2)
             }
-            AttributionView()
-                .padding(.top, 2)
         }
         .multilineTextAlignment(.center)
         .sheet(isPresented: $editing) {
@@ -125,6 +126,10 @@ private struct CustomWordEditor: View {
                         dismiss()
                     }
                 }
+                // WeatherKit-required attribution lives here, off the main screen,
+                // so it stays accessible without crowding the comfort word.
+                AttributionView()
+                    .padding(.top, 12)
             }
             .padding()
         }
@@ -154,28 +159,41 @@ private struct FailureView: View {
     }
 }
 
-/// WeatherKit-required attribution. Shows the data-source name linked to Apple's
-/// legal page. The official Apple Weather mark image (from
-/// `WeatherAttribution.combinedMark*URL`) should replace the text before App
-/// Store submission.
+/// WeatherKit-required attribution: the official Apple Weather combined mark,
+/// linked to Apple's legal page. Apple requires the mark be visible and legible;
+/// we render it as small as stays legible. Falls back to a "Weather" text link
+/// until the mark image loads (or if it fails to).
 private struct AttributionView: View {
-    @State private var legalURL: URL?
+    @State private var info: WeatherAttributionInfo?
 
     var body: some View {
         Group {
-            if let legalURL {
-                // .plain so the link reads as subtle text, not a full-width
-                // watchOS button competing with the content.
-                Link(destination: legalURL) { Text("Weather") }
-                    .buttonStyle(.plain)
+            if let info {
+                Link(destination: info.legalPageURL) {
+                    AsyncImage(url: info.combinedMarkURL) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    } placeholder: {
+                        Text("Weather")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                    // Smallest height that keeps the wordmark legible on watch.
+                    .frame(height: 10)
+                }
+                // .plain so the link doesn't render as a full-width watchOS
+                // button competing with the content.
+                .buttonStyle(.plain)
             } else {
                 Text("Weather")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
-        .font(.caption2)
-        .foregroundStyle(.tertiary)
+        // The watch background is black, so request the light (white) mark.
         .task {
-            legalURL = try? await WeatherAttributionInfo.legalPageURL()
+            info = try? await WeatherAttributionInfo.load(darkBackground: true)
         }
     }
 }
