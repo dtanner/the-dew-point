@@ -59,10 +59,14 @@ struct ComfortProvider: TimelineProvider {
     }
 
     private static func entry(for snapshot: WeatherSnapshot) -> ComfortEntry {
+        // Date the entry "now", not `snapshot.asOf` (WeatherKit's observation time,
+        // which lags real time): this is the current reading and should display as
+        // soon as the timeline is built. A past date makes WidgetKit treat the lone
+        // entry as already-aged, which undercuts how it schedules the next reload.
         // Resolve through the shared store so the complication honors the user's
         // per-band custom words exactly as the app does.
         ComfortEntry(
-            date: snapshot.asOf,
+            date: .now,
             descriptor: snapshot.precipitation ?? CustomizationStore().resolvedDescriptor(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
         )
     }

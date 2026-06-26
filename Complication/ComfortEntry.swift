@@ -3,7 +3,8 @@ import ThermalComfort
 import WidgetKit
 
 /// One point on a complication's timeline: the comfort to show and the time the
-/// underlying reading is from (used as the entry date so the system can order them).
+/// entry becomes relevant (set to "now" when the timeline is built, so WidgetKit
+/// orders and ages it from the present rather than the reading's observation time).
 struct ComfortEntry: TimelineEntry {
     let date: Date
     let descriptor: ComfortDescriptor
