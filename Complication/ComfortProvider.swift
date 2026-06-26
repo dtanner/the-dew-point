@@ -67,7 +67,8 @@ struct ComfortProvider: TimelineProvider {
         // per-band custom words exactly as the app does.
         ComfortEntry(
             date: .now,
-            descriptor: snapshot.precipitation ?? CustomizationStore().resolvedDescriptor(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+            descriptor: snapshot.precipitation ?? CustomizationStore().resolvedDescriptor(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF),
+            dewpointF: snapshot.dewpointF
         )
     }
 }

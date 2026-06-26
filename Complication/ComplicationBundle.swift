@@ -1,12 +1,13 @@
 import SwiftUI
 import WidgetKit
 
-/// Entry point for the widget extension. A single complication kind that shows the
-/// comfort (or precipitation) word, placed in the rectangular or inline slot of a
-/// face.
+/// Entry point for the widget extension. Two complication kinds: the comfort (or
+/// precipitation) word for the rectangular/inline slots, and the bare dew point
+/// number for the round circular/corner slots.
 @main
 struct DewPointComplications: WidgetBundle {
     var body: some Widget {
         WordComplication()
+        DewpointComplication()
     }
 }
