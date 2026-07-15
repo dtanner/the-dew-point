@@ -8,6 +8,7 @@ options:
   createIntermediateGroups: true
   deploymentTarget:
     watchOS: "26.0"
+    iOS: "26.0"
 
 settings:
   base:
@@ -18,14 +19,46 @@ settings:
     # fails. `just deploy` passes -allowProvisioningUpdates to register the new App ID.
     CODE_SIGN_STYLE: Automatic
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "2"
 
 packages:
   DewPoint:
     path: .
 
+# XcodeGen doesn't auto-generate a scheme for the watchapp2-container product
+# type, so `just release` gets an explicit one.
+schemes:
+  TheDewPointContainer:
+    build:
+      targets:
+        TheDewPointContainer: all
+    archive:
+      config: Release
+
 targets:
+  # Stub iOS container — the unit App Store Connect actually distributes. Watch-only
+  # apps ship as an executable-less iOS shell with the watch app embedded under
+  # Watch/ (Apple's own watch-only template shape). Required because Xcode 26 has a
+  # known bug (FB22730778) where bare watchOS archives never offer the
+  # app-store-connect export method. `just release` archives THIS target.
+  TheDewPointContainer:
+    type: application.watchapp2-container
+    platform: iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint
+        PRODUCT_NAME: TheDewPoint
+    info:
+      path: Container/Info.plist
+      properties:
+        CFBundleDisplayName: The Dew Point
+        # Must match the embedded watch app's version or validation rejects it.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+    dependencies:
+      - target: TheDewPoint
+
   TheDewPoint:
     type: application
     platform: watchOS
@@ -33,7 +66,7 @@ targets:
       - App
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint.watchkitapp
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     info:
@@ -45,6 +78,9 @@ targets:
         WKApplication: true
         WKWatchOnly: true
         CFBundleDisplayName: The Dew Point
+        # Versions come from the build settings above, bumped by `just release`.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSLocationWhenInUseUsageDescription: The Dew Point uses your location to fetch the local temperature and dew point.
     entitlements:
       path: App/TheDewPoint.entitlements
@@ -70,11 +106,14 @@ targets:
       - Complication
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint.watchkitapp.widget
     info:
       path: Complication/Info.plist
       properties:
         CFBundleDisplayName: The Dew Point
+        # Must match the app's version or App Store validation rejects the build.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:

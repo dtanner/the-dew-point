@@ -37,6 +37,10 @@ generate:
 complications:
     swift Scripts/render-complications.swift
 
+# Render the app icon into the asset catalog (macOS only).
+appicon:
+    swift Scripts/render-appicon.swift
+
 # Compile the watch app for the simulator (no device or paired watch needed).
 build-app: generate
     xcodebuild build \
@@ -61,7 +65,7 @@ deploy: generate
     xcrun devicectl device install app --device {{watch}} \
         build/dd/Build/Products/Debug-watchos/TheDewPoint.app
     xcrun devicectl device process launch --device {{watch}} \
-        com.dantanner.dewpoint
+        com.dantanner.dewpoint.watchkitapp
 
 # Bump the version, archive, and upload to TestFlight/App Store Connect, then commit and tag
 release kind: test
@@ -95,8 +99,10 @@ release kind: test
     )
     echo "Releasing $version"
     xcodegen generate
-    xcodebuild -project TheDewPoint.xcodeproj -scheme TheDewPoint \
-        -destination "generic/platform=watchOS" \
+    # Archives the stub iOS container (which embeds the watch app) — see the
+    # TheDewPointContainer comment in project.yml for why.
+    xcodebuild -project TheDewPoint.xcodeproj -scheme TheDewPointContainer \
+        -destination "generic/platform=iOS" \
         -archivePath build/release/TheDewPoint.xcarchive \
         -allowProvisioningUpdates \
         -authenticationKeyPath "$key_path" \

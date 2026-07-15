@@ -12,6 +12,7 @@ App/Info.plist
 App/*.entitlements
 Complication/Info.plist
 Complication/*.entitlements
+Container/Info.plist
 *.xcworkspace/
 xcuserdata/
 DerivedData/
