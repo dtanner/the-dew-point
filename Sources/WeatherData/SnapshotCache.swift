@@ -3,7 +3,7 @@ import Foundation
 /// The App Group shared between the app and the complication extension. They are
 /// separate processes, so this is the only storage both can see.
 public enum AppGroup {
-    public static let identifier = "group.com.dantanner.thedewpoint"
+    public static let identifier = "group.com.dantanner.dewpoint"
 
     /// Shared defaults, falling back to `.standard` if the entitlement is missing
     /// (e.g. in a unit-test host) so callers never have to unwrap.

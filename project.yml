@@ -11,7 +11,7 @@ options:
 
 settings:
   base:
-    DEVELOPMENT_TEAM: PG956FSTJB
+    DEVELOPMENT_TEAM: 72SPM7GVK7
     # Explicit so the new complication target also goes through automatic
     # provisioning — otherwise Xcode falls back to a generic wildcard profile that
     # doesn't include the watch (and isn't WeatherKit-capable) and the device build
@@ -33,7 +33,7 @@ targets:
       - App
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.thedewpoint
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     info:
@@ -52,7 +52,7 @@ targets:
         com.apple.developer.weatherkit: true
         # Shared storage so the app can hand its latest reading to the complication.
         com.apple.security.application-groups:
-          - group.com.dantanner.thedewpoint
+          - group.com.dantanner.dewpoint
     dependencies:
       - package: DewPoint
         product: ThermalComfort
@@ -70,7 +70,7 @@ targets:
       - Complication
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.thedewpoint.widget
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint.widget
     info:
       path: Complication/Info.plist
       properties:
@@ -83,7 +83,7 @@ targets:
         com.apple.developer.weatherkit: true
         # Same group as the app — this is how the widget reads the app's reading.
         com.apple.security.application-groups:
-          - group.com.dantanner.thedewpoint
+          - group.com.dantanner.dewpoint
     dependencies:
       - package: DewPoint
         product: ThermalComfort

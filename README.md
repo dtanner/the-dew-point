@@ -6,7 +6,7 @@ _Muggy_, _Sweltering_. When it's precipitating, the comfort word gives way to
 what's falling (_Heavy Rain_, _Scattered Thunderstorms_), taken straight from
 WeatherKit's current condition.
 
-Bundle ID: `com.dantanner.thedewpoint`
+Bundle ID: `com.dantanner.dewpoint`
 
 The full temperature/dew-point → word mapping lives in
 [COMFORT_TABLE.md](COMFORT_TABLE.md), kept up to date as we get real-world tuning
