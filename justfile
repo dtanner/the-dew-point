@@ -41,6 +41,10 @@ complications:
 appicon:
     swift Scripts/render-appicon.swift
 
+# The watchOS simulator to use for `just run-sim` (from `xcrun simctl list devices`).
+# Override: `just run-sim sim="Apple Watch Ultra 3 (49mm)"`.
+sim := "Apple Watch Series 11 (46mm)"
+
 # Compile the watch app for the simulator (no device or paired watch needed).
 build-app: generate
     xcodebuild build \
@@ -48,6 +52,20 @@ build-app: generate
         -scheme TheDewPoint \
         -destination 'generic/platform=watchOS Simulator' \
         -quiet
+
+# Build, install, and launch the watch app in the simulator.
+run-sim: generate
+    xcodebuild build \
+        -project TheDewPoint.xcodeproj \
+        -scheme TheDewPoint \
+        -destination 'platform=watchOS Simulator,name={{sim}}' \
+        -derivedDataPath build/dd-sim \
+        -quiet
+    open -a Simulator
+    xcrun simctl boot '{{sim}}' 2>/dev/null || true
+    xcrun simctl install '{{sim}}' \
+        build/dd-sim/Build/Products/Debug-watchsimulator/TheDewPoint.app
+    xcrun simctl launch '{{sim}}' com.dantanner.dewpoint.watchkitapp
 
 # Build, sign, install, and launch on the paired Apple Watch.
 # The watch must be unlocked, on the same Wi-Fi as this Mac, with Developer Mode
