@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024">
+<defs>
+<radialGradient id="bg" cx="50%" cy="32%" r="85%"><stop offset="0%" stop-color="#0e3a52"></stop><stop offset="55%" stop-color="#072538"></stop><stop offset="100%" stop-color="#041520"></stop></radialGradient>
+<linearGradient id="dg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#aef1ff"></stop><stop offset="45%" stop-color="#4cc3e0"></stop><stop offset="100%" stop-color="#1573a0"></stop></linearGradient>
+<radialGradient id="sh" cx="35%" cy="22%" r="45%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"></stop><stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop></radialGradient>
+<radialGradient id="glow" cx="50%" cy="88%" r="45%"><stop offset="0%" stop-color="#2fb9dd" stop-opacity="0.55"></stop><stop offset="100%" stop-color="#2fb9dd" stop-opacity="0"></stop></radialGradient>
+</defs>
+<rect width="100" height="100" fill="url(#bg)"></rect>
+<ellipse cx="50" cy="88" rx="34" ry="12" fill="url(#glow)"></ellipse>
+<path d="M 50 17 C 69.25 43.25 75.2 57.25 75.2 66.7&#xA;   A 25.2 25.2 0 1 1 24.8 66.7&#xA;   C 24.8 57.25 30.75 43.25 50 17" fill="url(#dg)"></path>
+<path d="M 50 17 C 69.25 43.25 75.2 57.25 75.2 66.7&#xA;   A 25.2 25.2 0 1 1 24.8 66.7&#xA;   C 24.8 57.25 30.75 43.25 50 17" fill="none" stroke="#e6faff" stroke-opacity="0.6" stroke-width="1.4"></path>
+<ellipse cx="40.2" cy="53.75" rx="9.1" ry="13.3" fill="url(#sh)" transform="rotate(-24 40.2 53.75)"></ellipse>
+<circle cx="61" cy="70" r="3.2" fill="#ffffff" opacity="0.55"></circle>
+</svg>
