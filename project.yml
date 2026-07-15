@@ -56,6 +56,9 @@ targets:
         # Must match the embedded watch app's version or validation rejects it.
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Only exempt encryption (HTTPS) — answers the export-compliance question
+        # so TestFlight builds don't sit in "Missing Compliance".
+        ITSAppUsesNonExemptEncryption: false
     dependencies:
       - target: TheDewPoint
 
@@ -81,6 +84,7 @@ targets:
         # Versions come from the build settings above, bumped by `just release`.
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
         NSLocationWhenInUseUsageDescription: The Dew Point uses your location to fetch the local temperature and dew point.
     entitlements:
       path: App/TheDewPoint.entitlements
@@ -114,6 +118,7 @@ targets:
         # Must match the app's version or App Store validation rejects the build.
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     entitlements:
