@@ -86,18 +86,18 @@ Uses **RH** thresholds, not raw dewpoint — same dp reads very differently at 5
 | rh > 88 | Clammy | 🌫️ |
 | dp < 38 | Crisp | 🍃 |
 | dp < 50 | Brisk | 💨 |
-| rh < 80 | Comfortable | 🌤️ |
+| rh < 80 | Comfy | 🌤️ |
 | otherwise | Damp | 💧 |
 
-> Example: dp=55 at 57°F → rh=92% → **Clammy**; dp=55 at 63°F → rh=75% → **Comfortable**
+> Example: dp=55 at 57°F → rh=92% → **Clammy**; dp=55 at 63°F → rh=75% → **Comfy**
 
 ### Mild (65–74°F)
-Dewpoint-driven. Capped at Muggy — never Oppressive or worse.
+Dewpoint-driven. Capped at Muggy — never Stifling or worse.
 
 | dp | Word | Icon |
 |---|---|---|
 | < 50 | Pleasant | ☀️ |
-| 50–56 | Comfortable | 🌤️ |
+| 50–56 | Comfy | 🌤️ |
 | 57–62 | Sticky | 💦 |
 | 63+ | Muggy | 😓 |
 
@@ -110,7 +110,7 @@ Dewpoint-driven. Balmy lives here and only here.
 | 48–56 | Warm | ☀️ |
 | 57–62 | Sticky | 💦 |
 | 63–69 | Muggy | 😓 |
-| 70+ | Oppressive | 😰 |
+| 70+ | Stifling | 😰 |
 
 ### Hot (80–89°F)
 **Feels-like driven** (heat index + actual temp). Dry air (rh < 40) → `feels = actual`.
@@ -120,26 +120,26 @@ Dewpoint-driven. Balmy lives here and only here.
 | < 84 | any | Warm | 🌞 |
 | 84–89 | < 62 | Hot | 🌡️ |
 | 84–89 | 62–67 | Muggy | 😓 |
-| 84–89 | 68+ | Oppressive | 😰 |
-| 90–96 | < 60 | Sweltering | 🔥 |
-| 90–96 | 60–67 | Oppressive | 😰 |
-| 90–96 | 68+ | Miserable | 😵 |
-| 97+ | any | Miserable | 😵 |
+| 84–89 | 68+ | Stifling | 😰 |
+| 90–96 | < 60 | Steamy | 🔥 |
+| 90–96 | 60–67 | Stifling | 😰 |
+| 90–96 | 68+ | Brutal | 😵 |
+| 97+ | any | Brutal | 😵 |
 
 ### Very Hot (90–99°F)
 | dp | Word | Icon |
 |---|---|---|
 | < 45 | Dry Heat | 🌵 |
 | 45–54 | Hot | 🌡️ |
-| 55–62 | Sweltering | 🔥 |
-| 63–67 | Miserable | 😵 |
-| 68+ | Dangerous | 🥵 |
+| 55–62 | Steamy | 🔥 |
+| 63–67 | Brutal | 😵 |
+| 68+ | Danger | 🥵 |
 
 ### Extreme (100°F+)
 | dp | Word | Icon |
 |---|---|---|
-| < 48 | Scorching | 🏜️ |
-| 48–59 | Dangerous | 🥵 |
+| < 48 | Searing | 🏜️ |
+| 48–59 | Danger | 🥵 |
 | 60+ | Deadly | ☠️ |
 
 ---
@@ -186,12 +186,12 @@ def describe(temp_f: float, dewpoint_f: float) -> tuple[str, str]:
         if rh > 88:  return "Clammy",      "🌫️"
         if dp < 38:  return "Crisp",       "🍃"
         if dp < 50:  return "Brisk",       "💨"
-        if rh < 80:  return "Comfortable", "🌤️"
+        if rh < 80:  return "Comfy", "🌤️"
         return               "Damp",       "💧"
 
     if temp_f < 75:
         if dp < 50:  return "Pleasant",    "☀️"
-        if dp < 57:  return "Comfortable", "🌤️"
+        if dp < 57:  return "Comfy", "🌤️"
         if dp < 63:  return "Sticky",      "💦"
         return               "Muggy",      "😓"
 
@@ -200,29 +200,29 @@ def describe(temp_f: float, dewpoint_f: float) -> tuple[str, str]:
         if dp < 57:  return "Warm",        "☀️"
         if dp < 63:  return "Sticky",      "💦"
         if dp < 70:  return "Muggy",       "😓"
-        return               "Oppressive", "😰"
+        return               "Stifling", "😰"
 
     if temp_f < 90:
         if feels < 84:       return "Warm",        "🌞"
         if feels < 90:
             if dp < 62:      return "Hot",          "🌡️"
             if dp < 68:      return "Muggy",        "😓"
-            return                   "Oppressive",  "😰"
+            return                   "Stifling",  "😰"
         if feels < 97:
-            if dp < 60:      return "Sweltering",   "🔥"
-            if dp < 68:      return "Oppressive",   "😰"
-            return                   "Miserable",   "😵"
-        return "Miserable", "😵"
+            if dp < 60:      return "Steamy",   "🔥"
+            if dp < 68:      return "Stifling",   "😰"
+            return                   "Brutal",   "😵"
+        return "Brutal", "😵"
 
     if temp_f < 100:
         if dp < 45:  return "Dry Heat",    "🌵"
         if dp < 55:  return "Hot",         "🌡️"
-        if dp < 63:  return "Sweltering",  "🔥"
-        if dp < 68:  return "Miserable",   "😵"
-        return               "Dangerous",  "🥵"
+        if dp < 63:  return "Steamy",  "🔥"
+        if dp < 68:  return "Brutal",   "😵"
+        return               "Danger",  "🥵"
 
-    if dp < 48:  return "Scorching",  "🏜️"
-    if dp < 60:  return "Dangerous",  "🥵"
+    if dp < 48:  return "Searing",  "🏜️"
+    if dp < 60:  return "Danger",  "🥵"
     return               "Deadly",    "☠️"
 ```
 

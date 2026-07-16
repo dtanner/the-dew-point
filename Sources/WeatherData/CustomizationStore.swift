@@ -26,7 +26,8 @@ public struct Customization: Codable, Equatable, Sendable {
 /// letters.
 public enum ComfortWord {
     /// Longest a custom word may be. Sized so it can't overflow the hero label or
-    /// the complication; the longest catalog word ("Comfortable") is 11.
+    /// the complication; the longest catalog words ("Freezing", "Pleasant",
+    /// "Stifling", "Dry Heat") are 8.
     public static let maxLength = 14
 
     /// Returns a cleaned word ready to store, or `nil` if the input can't be a valid

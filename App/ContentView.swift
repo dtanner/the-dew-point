@@ -81,7 +81,7 @@ private struct ConditionsView: View {
                 // before truncating so the longest still fit a 40mm face.
                 .lineLimit(2)
                 .minimumScaleFactor(0.6)
-                // Take the full face width so a single long word ("Comfortable")
+                // Take the full face width so a single long word ("Freezing")
                 // keeps one line instead of wrapping to the sibling buttons' width.
                 .frame(maxWidth: .infinity)
             Text("\(fahrenheit: snapshot.temperatureF) · dew \(fahrenheit: snapshot.dewpointF)")

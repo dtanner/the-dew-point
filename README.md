@@ -2,7 +2,7 @@
 
 A watchOS app (watchOS 26+) that turns the current temperature and dew point into
 a single, glanceable word describing how it feels outside — e.g. _Crisp_,
-_Muggy_, _Sweltering_. When it's precipitating, the comfort word gives way to
+_Muggy_, _Steamy_. When it's precipitating, the comfort word gives way to
 what's falling (_Heavy Rain_, _Scattered Thunderstorms_), taken straight from
 WeatherKit's current condition.
 

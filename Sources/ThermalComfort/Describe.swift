@@ -14,13 +14,13 @@ public enum ComfortBand: Hashable, Sendable {
     case bitter
     case subfreezingRaw, subfreezingFreezing
     case coldRaw, coldCrisp, cold
-    case coolClammy, coolCrisp, coolBrisk, coolComfortable, coolDamp
-    case mildPleasant, mildComfortable, mildSticky, mildMuggy
-    case warmBalmy, warmWarm, warmSticky, warmMuggy, warmOppressive
-    case hotWarm, hotHot, hotMuggy, hotOppressive
-    case hotSweltering, hotOppressiveHigh, hotMiserable, hotMiserableExtreme
-    case veryHotDryHeat, veryHotHot, veryHotSweltering, veryHotMiserable, veryHotDangerous
-    case extremeScorching, extremeDangerous, extremeDeadly
+    case coolClammy, coolCrisp, coolBrisk, coolComfy, coolDamp
+    case mildPleasant, mildComfy, mildSticky, mildMuggy
+    case warmBalmy, warmWarm, warmSticky, warmMuggy, warmStifling
+    case hotWarm, hotHot, hotMuggy, hotStifling
+    case hotSteamy, hotStiflingHigh, hotBrutal, hotBrutalExtreme
+    case veryHotDryHeat, veryHotHot, veryHotSteamy, veryHotBrutal, veryHotDanger
+    case extremeSearing, extremeDanger, extremeDeadly
 }
 
 /// Maps temperature and dew point (both °F) to the comfort band they fall in and
@@ -53,14 +53,14 @@ public func classify(tempF: Double, dewpointF: Double) -> (band: ComfortBand, de
         if rh > 88 { return (.coolClammy, .clammy) }
         if dp < 38 { return (.coolCrisp, .crisp) }
         if dp < 50 { return (.coolBrisk, .brisk) }
-        if rh < 80 { return (.coolComfortable, .comfortable) }
+        if rh < 80 { return (.coolComfy, .comfy) }
         return (.coolDamp, .damp)
     }
 
     // Mild — 65–74°F (dew-point-driven, capped at Muggy).
     if tempF < 75 {
         if dp < 50 { return (.mildPleasant, .pleasant) }
-        if dp < 57 { return (.mildComfortable, .comfortable) }
+        if dp < 57 { return (.mildComfy, .comfy) }
         if dp < 63 { return (.mildSticky, .sticky) }
         return (.mildMuggy, .muggy)
     }
@@ -71,7 +71,7 @@ public func classify(tempF: Double, dewpointF: Double) -> (band: ComfortBand, de
         if dp < 57 { return (.warmWarm, .warm) }
         if dp < 63 { return (.warmSticky, .sticky) }
         if dp < 70 { return (.warmMuggy, .muggy) }
-        return (.warmOppressive, .oppressive)
+        return (.warmStifling, .stifling)
     }
 
     // Hot — 80–89°F (feels-like driven; dry air falls back to actual temp).
@@ -80,28 +80,28 @@ public func classify(tempF: Double, dewpointF: Double) -> (band: ComfortBand, de
         if feels < 90 {
             if dp < 62 { return (.hotHot, .hot) }
             if dp < 68 { return (.hotMuggy, .muggy) }
-            return (.hotOppressive, .oppressive)
+            return (.hotStifling, .stifling)
         }
         if feels < 97 {
-            if dp < 60 { return (.hotSweltering, .sweltering) }
-            if dp < 68 { return (.hotOppressiveHigh, .oppressive) }
-            return (.hotMiserable, .miserable)
+            if dp < 60 { return (.hotSteamy, .steamy) }
+            if dp < 68 { return (.hotStiflingHigh, .stifling) }
+            return (.hotBrutal, .brutal)
         }
-        return (.hotMiserableExtreme, .miserable)
+        return (.hotBrutalExtreme, .brutal)
     }
 
     // Very Hot — 90–99°F (dew-point-driven).
     if tempF < 100 {
         if dp < 45 { return (.veryHotDryHeat, .dryHeat) }
         if dp < 55 { return (.veryHotHot, .hot) }
-        if dp < 63 { return (.veryHotSweltering, .sweltering) }
-        if dp < 68 { return (.veryHotMiserable, .miserable) }
-        return (.veryHotDangerous, .dangerous)
+        if dp < 63 { return (.veryHotSteamy, .steamy) }
+        if dp < 68 { return (.veryHotBrutal, .brutal) }
+        return (.veryHotDanger, .danger)
     }
 
     // Extreme — 100°F+
-    if dp < 48 { return (.extremeScorching, .scorching) }
-    if dp < 60 { return (.extremeDangerous, .dangerous) }
+    if dp < 48 { return (.extremeSearing, .searing) }
+    if dp < 60 { return (.extremeDanger, .danger) }
     return (.extremeDeadly, .deadly)
 }
 

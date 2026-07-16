@@ -24,20 +24,20 @@ public extension ComfortDescriptor {
     static let cold        = Self(word: "Cold")
     static let clammy      = Self(word: "Clammy")
     static let brisk       = Self(word: "Brisk")
-    static let comfortable = Self(word: "Comfortable")
+    static let comfy       = Self(word: "Comfy")
     static let damp        = Self(word: "Damp")
     static let pleasant    = Self(word: "Pleasant")
     static let sticky      = Self(word: "Sticky")
     static let muggy       = Self(word: "Muggy")
     static let balmy       = Self(word: "Balmy")
     static let warm        = Self(word: "Warm")
-    static let oppressive  = Self(word: "Oppressive")
+    static let stifling    = Self(word: "Stifling")
     static let hot         = Self(word: "Hot")
-    static let sweltering  = Self(word: "Sweltering")
-    static let miserable   = Self(word: "Miserable")
+    static let steamy      = Self(word: "Steamy")
+    static let brutal      = Self(word: "Brutal")
     static let dryHeat     = Self(word: "Dry Heat")
-    static let dangerous   = Self(word: "Dangerous")
-    static let scorching   = Self(word: "Scorching")
+    static let danger      = Self(word: "Danger")
+    static let searing     = Self(word: "Searing")
     static let deadly      = Self(word: "Deadly")
 }
 
@@ -46,8 +46,8 @@ public extension ComfortDescriptor {
     /// (e.g. the complication sizing its font to the widest word) and any future
     /// gallery iteration.
     static let all: [ComfortDescriptor] = [
-        .bitter, .raw, .freezing, .crisp, .cold, .clammy, .brisk, .comfortable,
-        .damp, .pleasant, .sticky, .muggy, .balmy, .warm, .oppressive,
-        .hot, .sweltering, .miserable, .dryHeat, .dangerous, .scorching, .deadly,
+        .bitter, .raw, .freezing, .crisp, .cold, .clammy, .brisk, .comfy,
+        .damp, .pleasant, .sticky, .muggy, .balmy, .warm, .stifling,
+        .hot, .steamy, .brutal, .dryHeat, .danger, .searing, .deadly,
     ]
 }

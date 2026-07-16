@@ -11,7 +11,7 @@ struct DescribeTests {
     // different temperature, deliberately different result.
     @Test func coolBandExamplesFromSpec() {
         #expect(describe(tempF: 57, dewpointF: 55) == .clammy)
-        #expect(describe(tempF: 63, dewpointF: 55) == .comfortable)
+        #expect(describe(tempF: 63, dewpointF: 55) == .comfy)
     }
 
     // Dew point above temperature is unphysical; it must clamp to temp and not

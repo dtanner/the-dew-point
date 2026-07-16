@@ -49,7 +49,7 @@ when a band feels wrong on-device, adjust it here and in code together.
 | RH > 88 | Clammy |
 | dp < 38 | Crisp |
 | dp < 50 | Brisk |
-| RH < 80 | Comfortable |
+| RH < 80 | Comfy |
 | otherwise | Damp |
 
 ## Mild — 65–74 °F (dew-point-driven, capped at Muggy)
@@ -57,7 +57,7 @@ when a band feels wrong on-device, adjust it here and in code together.
 | Dew point (°F) | Word |
 |---|---|
 | < 50 | Pleasant |
-| 50–56 | Comfortable |
+| 50–56 | Comfy |
 | 57–62 | Sticky |
 | 63+ | Muggy |
 
@@ -69,7 +69,7 @@ when a band feels wrong on-device, adjust it here and in code together.
 | 48–56 | Warm |
 | 57–62 | Sticky |
 | 63–69 | Muggy |
-| 70+ | Oppressive |
+| 70+ | Stifling |
 
 ## Hot — 80–89 °F (feels-like-driven)
 
@@ -78,11 +78,11 @@ when a band feels wrong on-device, adjust it here and in code together.
 | < 84 | any | Warm |
 | 84–89 | < 62 | Hot |
 | 84–89 | 62–67 | Muggy |
-| 84–89 | 68+ | Oppressive |
-| 90–96 | < 60 | Sweltering |
-| 90–96 | 60–67 | Oppressive |
-| 90–96 | 68+ | Miserable |
-| 97+ | any | Miserable |
+| 84–89 | 68+ | Stifling |
+| 90–96 | < 60 | Steamy |
+| 90–96 | 60–67 | Stifling |
+| 90–96 | 68+ | Brutal |
+| 97+ | any | Brutal |
 
 ## Very Hot — 90–99 °F (dew-point-driven)
 
@@ -90,16 +90,16 @@ when a band feels wrong on-device, adjust it here and in code together.
 |---|---|
 | < 45 | Dry Heat |
 | 45–54 | Hot |
-| 55–62 | Sweltering |
-| 63–67 | Miserable |
-| 68+ | Dangerous |
+| 55–62 | Steamy |
+| 63–67 | Brutal |
+| 68+ | Danger |
 
 ## Extreme — 100 °F+ (dew-point-driven)
 
 | Dew point (°F) | Word |
 |---|---|
-| < 48 | Scorching |
-| 48–59 | Dangerous |
+| < 48 | Searing |
+| 48–59 | Danger |
 | 60+ | Deadly |
 
 ---

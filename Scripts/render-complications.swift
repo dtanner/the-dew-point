@@ -59,11 +59,18 @@ tile.setFill()
 NSBezierPath(roundedRect: rect, xRadius: 14, yRadius: 14).fill()
 
 // Mirror the view's sizing rule: one size for every word, chosen so the widest
-// catalog word fits the slot. Keep the sizer in sync with WordEntryView's
-// vocabulary ("Comfortable" is the widest catalog word).
+// catalog word fits the slot. Keep this list in sync with WordEntryView's
+// vocabulary (ComfortDescriptor.all).
+let catalogWords = [
+    "Bitter", "Raw", "Freezing", "Crisp", "Cold", "Clammy", "Brisk", "Comfy",
+    "Damp", "Pleasant", "Sticky", "Muggy", "Balmy", "Warm", "Stifling",
+    "Hot", "Steamy", "Brutal", "Dry Heat", "Danger", "Searing", "Deadly",
+]
 let baseFontSize: CGFloat = 36
 let wordFont = NSFont.systemFont(ofSize: baseFontSize, weight: .semibold)
-let widest = NSAttributedString(string: "Comfortable", attributes: [.font: wordFont]).size().width
+let widest = catalogWords
+    .map { NSAttributedString(string: $0, attributes: [.font: wordFont]).size().width }
+    .max()!
 let fitted = min(baseFontSize, baseFontSize * (rect.width - 16) / widest)
 
 let wordAttrs: [NSAttributedString.Key: Any] = [
