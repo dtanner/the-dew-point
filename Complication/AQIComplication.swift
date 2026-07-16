@@ -77,20 +77,47 @@ struct AQIProvider: TimelineProvider {
     }
 }
 
+private extension AQICategory {
+    /// The EPA's severity color for the category, tuned for the black watch
+    /// face: the system green/yellow/orange/red/purple are close matches with
+    /// better legibility than the EPA's exact swatches, and the EPA's hazardous
+    /// maroon (#7E0023) is nearly invisible on black, so it's lightened while
+    /// keeping the hue. Only full-color faces show these — tinted and vibrant
+    /// faces flatten every complication to the face's own palette.
+    var color: Color {
+        switch self {
+        case .good: .green
+        case .moderate: .yellow
+        case .unhealthyForSensitiveGroups: .orange
+        case .unhealthy: .red
+        case .veryUnhealthy: .purple
+        case .hazardous: Color(red: 0.86, green: 0.19, blue: 0.36)
+        }
+    }
+}
+
 private struct AQIEntryView: View {
     @Environment(\.widgetFamily) private var family
     let entry: AQIEntry
 
     private var number: String { entry.aqi.map(String.init) ?? "—" }
 
+    /// The value is color-coded by EPA severity; the no-reading dash stays
+    /// uncolored because there's no severity to report.
+    private var numberColor: Color {
+        entry.aqi.map { AQICategory(aqi: $0).color } ?? .primary
+    }
+
     var body: some View {
         switch family {
         case .accessoryRectangular:
             // The wide slot gets an "AQI" label; the round slots stay a bare
-            // number because there's no room for one there. Fixed size: the
-            // longest value ("AQI 999") fits every watch's slot, so nothing to
-            // compute (unlike the word complication's open-ended vocabulary).
-            Text("AQI \(number)")
+            // number because there's no room for one there. The label keeps the
+            // default color so the severity color reads as data, not decoration.
+            // Fixed size: the longest value ("AQI 999") fits every watch's
+            // slot, so nothing to compute (unlike the word complication's
+            // open-ended vocabulary).
+            Text("AQI \(Text(number).foregroundStyle(numberColor))")
                 .font(.system(size: 30, weight: .semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -99,27 +126,60 @@ private struct AQIEntryView: View {
             Text(number)
                 .font(.title2.weight(.semibold))
                 .minimumScaleFactor(0.6) // so a three-digit smoke-event value still fits
+                .foregroundStyle(numberColor)
                 .widgetAccentable()
         }
     }
 }
 
 #if DEBUG
+extension AQIEntry {
+    /// One entry per EPA severity band (plus no-reading), so flipping through
+    /// a preview's timeline shows every color the complication can take.
+    /// Individual constants rather than an array because the preview timeline
+    /// builder only accepts one entry expression at a time.
+    static let good = AQIEntry(date: .now, aqi: 42)
+    static let moderate = AQIEntry(date: .now, aqi: 85)
+    static let sensitive = AQIEntry(date: .now, aqi: 125)
+    static let unhealthy = AQIEntry(date: .now, aqi: 175)
+    static let veryUnhealthy = AQIEntry(date: .now, aqi: 250)
+    static let hazardous = AQIEntry(date: .now, aqi: 320)
+    static let noReading = AQIEntry(date: .now, aqi: nil)
+}
+
 #Preview("AQI — circular", as: .accessoryCircular) {
     AQIComplication()
 } timeline: {
-    AQIEntry.sample
+    AQIEntry.good
+    AQIEntry.moderate
+    AQIEntry.sensitive
+    AQIEntry.unhealthy
+    AQIEntry.veryUnhealthy
+    AQIEntry.hazardous
+    AQIEntry.noReading
 }
 
 #Preview("AQI — corner", as: .accessoryCorner) {
     AQIComplication()
 } timeline: {
-    AQIEntry.sample
+    AQIEntry.good
+    AQIEntry.moderate
+    AQIEntry.sensitive
+    AQIEntry.unhealthy
+    AQIEntry.veryUnhealthy
+    AQIEntry.hazardous
+    AQIEntry.noReading
 }
 
 #Preview("AQI — rectangular", as: .accessoryRectangular) {
     AQIComplication()
 } timeline: {
-    AQIEntry.sample
+    AQIEntry.good
+    AQIEntry.moderate
+    AQIEntry.sensitive
+    AQIEntry.unhealthy
+    AQIEntry.veryUnhealthy
+    AQIEntry.hazardous
+    AQIEntry.noReading
 }
 #endif
