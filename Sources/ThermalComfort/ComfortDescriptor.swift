@@ -41,9 +41,10 @@ public extension ComfortDescriptor {
     static let deadly      = Self(word: "Deadly")
 }
 
-extension ComfortDescriptor {
+public extension ComfortDescriptor {
     /// Every canonical descriptor, in cold-to-hot order — for catalog-wide checks
-    /// and any future gallery iteration.
+    /// (e.g. the complication sizing its font to the widest word) and any future
+    /// gallery iteration.
     static let all: [ComfortDescriptor] = [
         .bitter, .raw, .freezing, .crisp, .cold, .clammy, .brisk, .comfortable,
         .damp, .pleasant, .sticky, .muggy, .balmy, .warm, .oppressive,

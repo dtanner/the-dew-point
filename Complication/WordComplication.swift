@@ -1,4 +1,7 @@
 import SwiftUI
+import ThermalComfort
+import UIKit
+import WeatherData
 import WidgetKit
 
 /// Complication that shows the comfort as a single word, e.g. "Muggy". Drop it in
@@ -25,11 +28,35 @@ private struct WordEntryView: View {
             // Inline is a single styled line the system lays out; just hand it text.
             Text(entry.descriptor.word)
         default: // .accessoryRectangular
-            Text(entry.descriptor.word)
-                .font(.title3.weight(.semibold))
-                .minimumScaleFactor(0.6) // so "Comfortable" still fits
-                .widgetAccentable()
+            GeometryReader { geo in
+                Text(entry.descriptor.word)
+                    .font(.system(size: fontSize(fitting: geo.size.width), weight: .semibold))
+                    .lineLimit(1)
+                    .widgetAccentable()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
+    }
+
+    /// Base size the word renders at when nothing forces it smaller — roughly
+    /// fills the rectangular slot's height on an Ultra.
+    private static let baseFontSize: CGFloat = 36
+
+    /// One font size for every word this complication can currently show, computed
+    /// so the widest of them fits `width` on a single line. Sizing against the whole
+    /// vocabulary — the catalog, saved custom words, and this entry's own word
+    /// (which covers WeatherKit precipitation names like "Scattered Thunderstorms")
+    /// — keeps the size steady as conditions change on a given watch; it varies
+    /// only with the slot width, so bigger watches render bigger text.
+    private func fontSize(fitting width: CGFloat) -> CGFloat {
+        let font = UIFont.systemFont(ofSize: Self.baseFontSize, weight: .semibold)
+        let words = ComfortDescriptor.all.map(\.word)
+            + CustomizationStore().all().map(\.word)
+            + [entry.descriptor.word]
+        let widest = words
+            .map { NSAttributedString(string: $0, attributes: [.font: font]).size().width }
+            .max() ?? 0
+        return widest <= width ? Self.baseFontSize : Self.baseFontSize * width / widest
     }
 }
 

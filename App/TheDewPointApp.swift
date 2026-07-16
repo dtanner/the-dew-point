@@ -31,15 +31,22 @@ struct TheDewPointApp: App {
     private static func makeProvider(location: (any LocationProviding)? = nil) -> any WeatherProviding {
         #if DEBUG
         // Screenshot/UI hook: set DEWPOINT_FAKE="<tempF>,<dewpointF>[,<precip word>]"
-        // to bypass WeatherKit with fixed conditions. A third token forces a
-        // precipitation word (e.g. "Snow", "Heavy Rain"). Never in release builds.
+        // to bypass WeatherKit with fixed conditions (`just run-sim-fake` sets it).
+        // A third token forces a precipitation word (e.g. "Snow", "Heavy Rain").
+        // Never in release builds.
         if let env = ProcessInfo.processInfo.environment["DEWPOINT_FAKE"] {
             let parts = env.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
             if parts.count >= 2, let tempF = Double(parts[0]), let dewpointF = Double(parts[1]) {
                 let precipitation = parts.count >= 3 ? ComfortDescriptor(word: parts[2]) : nil
-                return FakeWeatherProvider(
-                    snapshot: WeatherSnapshot(temperatureF: tempF, dewpointF: dewpointF, precipitation: precipitation, asOf: .now)
-                )
+                let snapshot = WeatherSnapshot(temperatureF: tempF, dewpointF: dewpointF, precipitation: precipitation, asOf: .now)
+                // The complication runs in its own process and can't see this env
+                // var, so seed the shared cache too: its provider then serves these
+                // conditions (fresh within TTL) instead of hitting WeatherKit —
+                // which is how the complication is verified in the simulator, where
+                // WeatherKit doesn't work. The zero coordinate is a placeholder;
+                // it's only read for a live fetch, which the fake exists to avoid.
+                SnapshotCache().save(CachedReading(snapshot: snapshot, latitude: 0, longitude: 0, fetchedAt: .now))
+                return FakeWeatherProvider(snapshot: snapshot)
             }
         }
         #endif

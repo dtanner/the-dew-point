@@ -67,6 +67,19 @@ run-sim: generate
         build/dd-sim/Build/Products/Debug-watchsimulator/TheDewPoint.app
     xcrun simctl launch '{{sim}}' com.dantanner.dewpoint.watchkitapp
 
+# Run in the simulator with fixed fake conditions instead of WeatherKit (which
+# doesn't work in simulators). E.g. `just run-sim-fake 70 50` shows "Comfortable";
+# `just run-sim-fake 70 60 "Heavy Rain"` forces a precipitation word. The fake also
+# seeds the shared cache, so a complication placed on the sim's watch face shows
+# the same word once the app's launch reloads the timelines.
+run-sim-fake temp dew precip="": run-sim
+    #!/usr/bin/env zsh
+    set -eu
+    fake="{{temp}},{{dew}}"
+    [[ -n "{{precip}}" ]] && fake+=",{{precip}}"
+    SIMCTL_CHILD_DEWPOINT_FAKE="$fake" xcrun simctl launch --terminate-running-processes \
+        '{{sim}}' com.dantanner.dewpoint.watchkitapp
+
 # Build, sign, install, and launch on the paired Apple Watch.
 # The watch must be unlocked, on the same Wi-Fi as this Mac, with Developer Mode
 # on (keeping it on its charger helps it stay awake during install). The
