@@ -2,19 +2,21 @@ import SwiftUI
 import WeatherData
 import WidgetKit
 
-/// Complication that shows the current EPA Air Quality Index as a bare number,
-/// e.g. "42". Same round corner/sub-dial slots as the dew point number; the data
-/// comes from AirNow (WeatherKit has no air quality), so it needs the AirNow API
-/// key baked into the build — without one it shows the last cached value or a dash.
+/// Complication that shows the current EPA Air Quality Index, e.g. "42". Fits the
+/// same round corner/sub-dial slots as the dew point number, plus the rectangular
+/// slot (labeled "AQI 42" there, since a bare number in the wide slot reads as
+/// nothing in particular). The data comes from AirNow (WeatherKit has no air
+/// quality), so it needs the AirNow API key baked into the build — without one it
+/// shows the last cached value or a dash.
 struct AQIComplication: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "AirQualityValue", provider: AQIProvider()) { entry in
             AQIEntryView(entry: entry)
                 .containerBackground(.clear, for: .widget)
         }
-        .configurationDisplayName("The Dew Point — Air Quality")
+        .configurationDisplayName("Air Quality")
         .description("Shows the current EPA air quality index, e.g. “42”.")
-        .supportedFamilies([.accessoryCircular, .accessoryCorner])
+        .supportedFamilies([.accessoryCircular, .accessoryCorner, .accessoryRectangular])
     }
 }
 
@@ -76,13 +78,29 @@ struct AQIProvider: TimelineProvider {
 }
 
 private struct AQIEntryView: View {
+    @Environment(\.widgetFamily) private var family
     let entry: AQIEntry
 
+    private var number: String { entry.aqi.map(String.init) ?? "—" }
+
     var body: some View {
-        Text(entry.aqi.map(String.init) ?? "—")
-            .font(.title2.weight(.semibold))
-            .minimumScaleFactor(0.6) // so a three-digit smoke-event value still fits
-            .widgetAccentable()
+        switch family {
+        case .accessoryRectangular:
+            // The wide slot gets an "AQI" label; the round slots stay a bare
+            // number because there's no room for one there. Fixed size: the
+            // longest value ("AQI 999") fits every watch's slot, so nothing to
+            // compute (unlike the word complication's open-ended vocabulary).
+            Text("AQI \(number)")
+                .font(.system(size: 30, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .widgetAccentable()
+        default: // .accessoryCircular, .accessoryCorner
+            Text(number)
+                .font(.title2.weight(.semibold))
+                .minimumScaleFactor(0.6) // so a three-digit smoke-event value still fits
+                .widgetAccentable()
+        }
     }
 }
 
@@ -94,6 +112,12 @@ private struct AQIEntryView: View {
 }
 
 #Preview("AQI — corner", as: .accessoryCorner) {
+    AQIComplication()
+} timeline: {
+    AQIEntry.sample
+}
+
+#Preview("AQI — rectangular", as: .accessoryRectangular) {
     AQIComplication()
 } timeline: {
     AQIEntry.sample

@@ -10,7 +10,7 @@ struct DewpointComplication: Widget {
             DewpointEntryView(entry: entry)
                 .containerBackground(.clear, for: .widget)
         }
-        .configurationDisplayName("The Dew Point — Dew Point")
+        .configurationDisplayName("Dew Point")
         .description("Shows the current dew point as a number, e.g. “64°”.")
         .supportedFamilies([.accessoryCircular, .accessoryCorner])
     }

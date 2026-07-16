@@ -21,13 +21,16 @@ may show a placeholder word until you do.
 
 ## 2. Add the complications to a watch face
 
-There are two complications. Which one appears in the picker depends on the
-slot shape:
+There are three complications. **Which ones appear in the picker depends on
+the shape of the slot you tapped** — a rectangular slot only offers the
+complications that fit a rectangle, so don't worry if you don't see all three
+at once:
 
 | Complication | Shows | Fits in |
 | --- | --- | --- |
-| **The Dew Point — Word** | The feel, in one word (e.g. "Muggy") | Rectangular slots (like the big middle slot on Modular) and inline slots (the line next to the time) |
-| **The Dew Point — Dew Point** | The dew point as a number (e.g. "64°") | Circular and corner slots |
+| **Comfort Word** | The feel, in one word (e.g. "Muggy") | Rectangular slots (like the big middle slot on Modular) and inline slots (the line next to the time) |
+| **Dew Point** | The dew point as a number (e.g. "64°") | Circular and corner slots |
+| **Air Quality** | The EPA air quality index (e.g. "42"; "AQI 42" in rectangular slots) | Circular, corner, and rectangular slots |
 
 ### On the watch
 
@@ -71,6 +74,8 @@ rain or snow there's nothing to customize (see below), so the button is hidden.
 - **Refresh cadence:** complications update roughly every 30 minutes on their
   own (watchOS limits how often, so it can occasionally be longer). Opening
   the app refreshes them immediately.
+- **Air quality is US-only:** the AQI comes from the EPA's AirNow network, so
+  outside the US (or far from a reporting station) it shows a dash.
 - **Stale or odd reading?** Open the app. If it still looks wrong, that's
   exactly the kind of feedback I want.
 
