@@ -4,10 +4,11 @@ import WidgetKit
 
 /// Complication that shows the current EPA Air Quality Index, e.g. "42". Fits the
 /// same round corner/sub-dial slots as the dew point number, plus the rectangular
-/// slot (labeled "AQI 42" there, since a bare number in the wide slot reads as
-/// nothing in particular). The data comes from AirNow (WeatherKit has no air
-/// quality), so it needs the AirNow API key baked into the build — without one it
-/// shows the last cached value or a dash.
+/// slot and inline text slots like the Photos face's top/bottom lines (labeled
+/// "AQI 42" in both, since a bare number outside a round slot reads as nothing in
+/// particular). The data comes from AirNow (WeatherKit has no air quality), so it
+/// needs the AirNow API key baked into the build — without one it shows the last
+/// cached value or a dash.
 struct AQIComplication: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "AirQualityValue", provider: AQIProvider()) { entry in
@@ -16,7 +17,7 @@ struct AQIComplication: Widget {
         }
         .configurationDisplayName("Air Quality")
         .description("Shows the current EPA air quality index, e.g. “42”.")
-        .supportedFamilies([.accessoryCircular, .accessoryCorner, .accessoryRectangular])
+        .supportedFamilies([.accessoryCircular, .accessoryCorner, .accessoryRectangular, .accessoryInline])
     }
 }
 
@@ -91,6 +92,10 @@ private struct AQIEntryView: View {
 
     var body: some View {
         switch family {
+        case .accessoryInline:
+            // Inline is a single styled line the system lays out; it renders the
+            // text in the face's own style, so the severity color doesn't apply.
+            Text("AQI \(number)")
         case .accessoryRectangular:
             // The wide slot gets an "AQI" label; the round slots stay a bare
             // number because there's no room for one there. The label keeps the
@@ -161,6 +166,13 @@ extension AQIEntry {
     AQIEntry.unhealthy
     AQIEntry.veryUnhealthy
     AQIEntry.hazardous
+    AQIEntry.noReading
+}
+
+#Preview("AQI — inline", as: .accessoryInline) {
+    AQIComplication()
+} timeline: {
+    AQIEntry.good
     AQIEntry.noReading
 }
 #endif
