@@ -30,7 +30,10 @@ build:
     swift build
 
 # Regenerate the Xcode project from project.yml (run after cloning or editing it).
+# Seeds the git-ignored secrets file first so a fresh clone builds; paste your
+# AirNow API key into Config/Secrets.xcconfig to turn on the AQI complication.
 generate:
+    @[ -f Config/Secrets.xcconfig ] || cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
     xcodegen generate
 
 # Render the word complication to a PNG for the README (macOS only).
@@ -69,15 +72,18 @@ run-sim: generate
 
 # Run in the simulator with fixed fake conditions instead of WeatherKit (which
 # doesn't work in simulators). E.g. `just run-sim-fake 70 50` shows "Comfortable";
-# `just run-sim-fake 70 60 "Heavy Rain"` forces a precipitation word. The fake also
-# seeds the shared cache, so a complication placed on the sim's watch face shows
-# the same word once the app's launch reloads the timelines.
-run-sim-fake temp dew precip="": run-sim
+# `just run-sim-fake 70 60 "Heavy Rain"` forces a precipitation word, and a fourth
+# argument fakes the AQI (`just run-sim-fake 70 50 "" 42`). The fakes also seed
+# the shared caches, so complications placed on the sim's watch face show the
+# same values once the app's launch reloads the timelines.
+run-sim-fake temp dew precip="" aqi="": run-sim
     #!/usr/bin/env zsh
     set -eu
     fake="{{temp}},{{dew}}"
     [[ -n "{{precip}}" ]] && fake+=",{{precip}}"
-    SIMCTL_CHILD_DEWPOINT_FAKE="$fake" xcrun simctl launch --terminate-running-processes \
+    export SIMCTL_CHILD_DEWPOINT_FAKE="$fake"
+    [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
+    xcrun simctl launch --terminate-running-processes \
         '{{sim}}' com.dantanner.dewpoint.watchkitapp
 
 # Build, sign, install, and launch on the paired Apple Watch.

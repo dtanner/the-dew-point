@@ -16,9 +16,13 @@ struct TheDewPointApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // The live app reads real conditions from WeatherKit. Views are
-            // driven by `WeatherProviding`, so previews/tests inject fakes.
-            ContentView(model: ConditionsModel(provider: Self.makeProvider()))
+            // The live app reads real conditions from WeatherKit (and AQI from
+            // AirNow). Views are driven by the providing protocols, so
+            // previews/tests inject fakes.
+            ContentView(model: ConditionsModel(
+                provider: Self.makeProvider(),
+                airQuality: Self.makeAQIProvider()
+            ))
         }
     }
 
@@ -58,6 +62,29 @@ struct TheDewPointApp: App {
         return CachingWeatherProvider(wrapping: WeatherKitProvider(location: location), ttl: 15 * 60)
     }
 
+    /// The AQI counterpart of `makeProvider`, or `nil` when this build carries no
+    /// AirNow API key (Config/Secrets.xcconfig empty or absent) — the app then
+    /// simply shows no AQI line, and the AQI complication falls back to its cache.
+    @MainActor
+    private static func makeAQIProvider(location: (any LocationProviding)? = nil) -> (any AirQualityProviding)? {
+        #if DEBUG
+        // Screenshot/UI hook alongside DEWPOINT_FAKE: set DEWPOINT_FAKE_AQI=<int>
+        // to bypass AirNow (`just run-sim-fake` can set it). Seeds the shared
+        // cache for the same reason DEWPOINT_FAKE does: the complication can't
+        // see the env var, so it reads these conditions from the cache instead.
+        if let env = ProcessInfo.processInfo.environment["DEWPOINT_FAKE_AQI"],
+           let aqi = Int(env) {
+            AirQualityCache().save(CachedAirQuality(aqi: aqi, fetchedAt: .now))
+            return FakeAirQualityProvider(aqi: aqi)
+        }
+        #endif
+        guard let key = AirNowProvider.bundledAPIKey else { return nil }
+        return CachingAirQualityProvider(
+            wrapping: AirNowProvider(apiKey: key, location: location),
+            ttl: 15 * 60
+        )
+    }
+
     /// Asks watchOS to wake the app for a background refresh after `refreshInterval`.
     fileprivate static func scheduleBackgroundRefresh() {
         WKApplication.shared().scheduleBackgroundRefresh(
@@ -75,10 +102,12 @@ struct TheDewPointApp: App {
     @MainActor
     fileprivate static func handleBackgroundRefresh() async {
         defer { scheduleBackgroundRefresh() }
-        let provider = makeProvider(location: LastKnownLocationProvider())
-        // A failed fetch (no fix, no network) just leaves the cache as-is; the
-        // complication keeps showing the last good reading until the next wake-up.
-        _ = try? await provider.currentSnapshot()
+        // Failed fetches (no fix, no network) just leave the caches as-is; the
+        // complications keep showing the last good readings until the next wake-up.
+        _ = try? await makeProvider(location: LastKnownLocationProvider()).currentSnapshot()
+        if let aqiProvider = makeAQIProvider(location: LastKnownLocationProvider()) {
+            _ = try? await aqiProvider.currentAQI()
+        }
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

@@ -6,6 +6,12 @@ _Muggy_, _Sweltering_. When it's precipitating, the comfort word gives way to
 what's falling (_Heavy Rain_, _Scattered Thunderstorms_), taken straight from
 WeatherKit's current condition.
 
+Alongside the word there are two numeric complications for the round watch-face
+slots: the dew point itself, and the current EPA Air Quality Index. The AQI
+comes from [AirNow](https://www.airnow.gov) (WeatherKit carries no air quality
+data) and needs a free API key — see Development below; without one the feature
+simply stays off.
+
 Bundle ID: `com.dantanner.dewpoint`
 
 The full temperature/dew-point → word mapping lives in
@@ -41,7 +47,7 @@ complication reuses both packages unchanged and fetches on its own timeline.
 Sources/ThermalComfort/    The brain: meteorology + descriptor banding
 Sources/WeatherData/       WeatherKit + location behind a protocol; offline cache
 App/                       The watch app (current conditions screen)
-Complication/              WidgetKit extension: the word complication
+Complication/              WidgetKit extension: word, dew point, and AQI complications
 Tests/                     Parity grid, focused unit tests, cache round-trip
 ```
 
@@ -66,3 +72,8 @@ just build-app  # compile the watch app for the simulator
 Building or running the watch app target requires the **watchOS platform
 runtime** to be installed (Xcode ▸ Settings ▸ Components, or
 `xcodebuild -downloadPlatform watchOS`). The engine package alone does not.
+
+To light up the air quality complication, request a free key at
+[docs.airnowapi.org](https://docs.airnowapi.org) and paste it into
+`Config/Secrets.xcconfig` (`just generate` seeds that git-ignored file from
+`Config/Secrets.example.xcconfig`). Everything builds and runs without it.

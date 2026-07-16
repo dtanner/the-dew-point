@@ -68,6 +68,14 @@ private struct ConditionsView: View {
             Text("\(fahrenheit: snapshot.temperatureF) · dew \(fahrenheit: snapshot.dewpointF)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            // Its own line rather than a third segment above, so the caption
+            // never overflows a 40mm face. Absent (not "—") when there's no
+            // reading — a missing garnish shouldn't add noise.
+            if let aqi = model.aqi {
+                Text("AQI \(aqi)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             // No comfort band while precipitation is showing, so nothing to customize.
             if isCustomizable {
                 Button(isCustomized ? "Edit word" : "Customize") { editing = true }
@@ -130,6 +138,11 @@ private struct CustomWordEditor: View {
                 // so it stays accessible without crowding the comfort word.
                 AttributionView()
                     .padding(.top, 12)
+                // AirNow (EPA) data is public domain and needs no attribution,
+                // but naming the source keeps both data feeds accounted for.
+                Text("Air quality from EPA AirNow")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
             .padding()
         }

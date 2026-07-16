@@ -7,4 +7,10 @@ struct FakeWeatherProvider: WeatherProviding {
     let snapshot: WeatherSnapshot
     func currentSnapshot() async throws -> WeatherSnapshot { snapshot }
 }
+
+/// Canned AQI, the AirNow counterpart of `FakeWeatherProvider`.
+struct FakeAirQualityProvider: AirQualityProviding {
+    let aqi: Int
+    func currentAQI() async throws -> Int { aqi }
+}
 #endif
