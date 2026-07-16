@@ -71,6 +71,9 @@ targets:
     platform: watchOS
     sources:
       - App
+      # UI code compiled into both the app and the complication (e.g. the AQI
+      # severity colors) so the two renderings can't drift apart.
+      - Shared
     # Carries AIRNOW_API_KEY (air quality complication) into the build without it
     # living in this public repo; the key reaches the code via the AirNowAPIKey
     # Info.plist entry below.
@@ -119,6 +122,7 @@ targets:
     platform: watchOS
     sources:
       - Complication
+      - Shared
     # Same AirNow key wiring as the app — the widget extension is a separate
     # process with its own bundle, so it needs its own copy of the key.
     configFiles:

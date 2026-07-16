@@ -40,7 +40,7 @@ struct ContentView: View {
 }
 
 /// The hero view: the comfort (or precipitation) word, with the underlying
-/// numbers beneath. Weather attribution lives in the Customize sheet.
+/// numbers beneath. Version and weather attribution sit below the fold.
 private struct ConditionsView: View {
     let snapshot: WeatherSnapshot
     let descriptor: ComfortDescriptor
@@ -54,6 +54,25 @@ private struct ConditionsView: View {
     private var isCustomized: Bool { model.isCustomized(snapshot) }
 
     var body: some View {
+        ScrollView {
+            conditions
+                // Fill the first screenful, so at a glance the screen looks
+                // like a fixed face and the footer stays below the fold.
+                .containerRelativeFrame(.vertical)
+            footer
+        }
+        .multilineTextAlignment(.center)
+        .sheet(isPresented: $editing) {
+            CustomWordEditor(
+                initialText: isCustomized ? descriptor.word : "",
+                isCustomized: isCustomized,
+                onSave: { model.customize($0, for: snapshot) },
+                onReset: { model.removeCustomization(for: snapshot) }
+            )
+        }
+    }
+
+    private var conditions: some View {
         VStack(spacing: 2) {
             Text(descriptor.word)
                 .font(.title2.weight(.semibold))
@@ -72,7 +91,10 @@ private struct ConditionsView: View {
             // never overflows a 40mm face. Absent (not "—") when there's no
             // reading — a missing garnish shouldn't add noise.
             if let aqi = model.aqi {
-                Text("AQI \(aqi)")
+                // The number takes the EPA severity color, same as the
+                // complication; the label stays secondary so the color reads
+                // as data, not decoration.
+                Text("AQI \(Text("\(aqi)").foregroundStyle(AQICategory(aqi: aqi).color))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -85,15 +107,31 @@ private struct ConditionsView: View {
                     .padding(.top, 2)
             }
         }
-        .multilineTextAlignment(.center)
-        .sheet(isPresented: $editing) {
-            CustomWordEditor(
-                initialText: isCustomized ? descriptor.word : "",
-                isCustomized: isCustomized,
-                onSave: { model.customize($0, for: snapshot) },
-                onReset: { model.removeCustomization(for: snapshot) }
-            )
+        .frame(maxWidth: .infinity)
+    }
+
+    /// Below-the-fold housekeeping: the installed version (to confirm which
+    /// build reached the wrist after a deploy) and the data-source credits.
+    /// Crown-scroll reaches it in any state — unlike the Customize sheet,
+    /// whose button disappears while precipitation is showing, which is why
+    /// the attribution doesn't live there.
+    private var footer: some View {
+        VStack(spacing: 8) {
+            Text(Bundle.main.displayVersion)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+            AttributionView()
+            // AirNow (EPA) data is public domain and needs no attribution,
+            // but naming the source keeps both data feeds accounted for.
+            Text("Air quality from EPA AirNow")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
+        // The container frame on the conditions view excludes the bottom safe
+        // area, which watchOS lets scroll content run into — without this
+        // inset the footer's first line peeks onto the "fixed" first screenful.
+        .padding(.top, 24)
+        .padding(.bottom, 8)
     }
 }
 
@@ -134,15 +172,6 @@ private struct CustomWordEditor: View {
                         dismiss()
                     }
                 }
-                // WeatherKit-required attribution lives here, off the main screen,
-                // so it stays accessible without crowding the comfort word.
-                AttributionView()
-                    .padding(.top, 12)
-                // AirNow (EPA) data is public domain and needs no attribution,
-                // but naming the source keeps both data feeds accounted for.
-                Text("Air quality from EPA AirNow")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
             }
             .padding()
         }
@@ -208,6 +237,13 @@ private struct AttributionView: View {
         .task {
             info = try? await WeatherAttributionInfo.load(darkBackground: true)
         }
+    }
+}
+
+private extension Bundle {
+    /// The installed marketing version, e.g. "v1.2.1".
+    var displayVersion: String {
+        "v\((infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?")"
     }
 }
 
