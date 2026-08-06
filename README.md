@@ -16,7 +16,8 @@ Bundle ID: `com.dantanner.dewpoint`
 
 The full temperature/dew-point → word mapping lives in
 [COMFORT_TABLE.md](COMFORT_TABLE.md), kept up to date as we get real-world tuning
-feedback.
+feedback. To explore or tweak the bands visually, use the hosted
+[comfort band editor](https://dtanner.github.io/the-dew-point/comfort-editor.html).
 
 ## Screenshots
 
