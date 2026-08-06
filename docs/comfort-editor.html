@@ -272,38 +272,38 @@ function defaultConfig() {
         r("Crisp", p("rh", "<", 55)),
         r("Cold") ] },
     { label: "Cool",     tempMin: 50,   tempMax: 65,  axis: "rh", rules: [
-        r("Clammy",      p("rh", ">", 88)),
-        r("Damp",        p("rh", ">", 80)),
-        r("Comfortable", p("rh", ">", 58)),
-        r("Brisk",       p("rh", ">", 45)),
+        r("Clammy", p("rh", ">", 88)),
+        r("Damp",   p("rh", ">", 80)),
+        r("Comfy",  p("rh", ">", 58)),
+        r("Brisk",  p("rh", ">", 45)),
         r("Crisp") ] },
     // From here up it's warm enough that dew point drives the sticky/muggy feel.
     { label: "Mild",     tempMin: 65,   tempMax: 75,  axis: "dp", rules: [
-        r("Pleasant",    p("dp", "<", 50)),
-        r("Comfortable", p("dp", "<", 57)),
-        r("Sticky",      p("dp", "<", 63)),
+        r("Pleasant", p("dp", "<", 50)),
+        r("Comfy",    p("dp", "<", 57)),
+        r("Sticky",   p("dp", "<", 63)),
         r("Muggy") ] },
     { label: "Warm",     tempMin: 75,   tempMax: 80,  axis: "dp", rules: [
         r("Balmy",      p("dp", "<", 48)),
         r("Warm",       p("dp", "<", 57)),
         r("Sticky",     p("dp", "<", 63)),
         r("Muggy",      p("dp", "<", 70)),
-        r("Oppressive") ] },
+        r("Stifling") ] },
     { label: "Hot",      tempMin: 80,   tempMax: 90,  axis: "dp", rules: [
-        r("Warm",       p("dp", "<", 55)),
-        r("Hot",        p("dp", "<", 62)),
-        r("Muggy",      p("dp", "<", 68)),
-        r("Oppressive", p("dp", "<", 73)),
-        r("Miserable") ] },
+        r("Warm",     p("dp", "<", 55)),
+        r("Hot",      p("dp", "<", 62)),
+        r("Muggy",    p("dp", "<", 68)),
+        r("Stifling", p("dp", "<", 73)),
+        r("Brutal") ] },
     { label: "Very Hot", tempMin: 90,   tempMax: 100, axis: "dp", rules: [
-        r("Dry Heat",   p("dp", "<", 45)),
-        r("Hot",        p("dp", "<", 55)),
-        r("Sweltering", p("dp", "<", 63)),
-        r("Miserable",  p("dp", "<", 68)),
-        r("Dangerous") ] },
+        r("Dry Heat", p("dp", "<", 45)),
+        r("Hot",      p("dp", "<", 55)),
+        r("Steamy",   p("dp", "<", 63)),
+        r("Brutal",   p("dp", "<", 68)),
+        r("Danger") ] },
     { label: "Extreme",  tempMin: 100,  tempMax: null, axis: "dp", rules: [
-        r("Scorching", p("dp", "<", 48)),
-        r("Dangerous", p("dp", "<", 60)),
+        r("Searing", p("dp", "<", 48)),
+        r("Danger",  p("dp", "<", 60)),
         r("Deadly") ] },
   ];
 }
@@ -333,8 +333,8 @@ function newBand(tempMin = null, tempMax = null) {
 
 // Catalog order for stable cold→hot coloring.
 const CATALOG = ["Bitter","Raw","Freezing","Crisp","Cold","Clammy","Brisk",
-  "Comfortable","Damp","Pleasant","Sticky","Muggy","Balmy","Warm","Oppressive",
-  "Hot","Sweltering","Miserable","Dry Heat","Dangerous","Scorching","Deadly"];
+  "Comfy","Damp","Pleasant","Sticky","Muggy","Balmy","Warm","Stifling",
+  "Hot","Steamy","Brutal","Dry Heat","Danger","Searing","Deadly"];
 
 function hashHue(str) { let h = 0; for (const c of str) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
 function colorFor(word) {
