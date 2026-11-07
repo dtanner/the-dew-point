@@ -32,3 +32,4 @@ images/screenshots/
 # Local Claude Code settings
 .claude/settings.local.json
 .llm/
+.idea/
