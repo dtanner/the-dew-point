@@ -23,6 +23,7 @@ public enum ComfortBand: Hashable, Sendable {
     case extremeSearing, extremeDanger, extremeDeadly
 }
 
+// Predates SwiftLint; exempted rather than refactored.
 /// Maps temperature and dew point (both °F) to the comfort band they fall in and
 /// that band's default descriptor.
 ///
@@ -31,7 +32,7 @@ public enum ComfortBand: Hashable, Sendable {
 /// document. Dew point is clamped to temperature first (it can't physically
 /// exceed it). The 80–89°F band is "feels like" driven; the rest key off dew
 /// point or relative humidity directly, as noted per band.
-public func classify(tempF: Double, dewpointF: Double) -> (band: ComfortBand, descriptor: ComfortDescriptor) {
+public func classify(tempF: Double, dewpointF: Double) -> (band: ComfortBand, descriptor: ComfortDescriptor) { // swiftlint:disable:this cyclomatic_complexity
     let dp = min(dewpointF, tempF)
     let rh = Meteorology.relativeHumidity(tempF: tempF, dewpointF: dp)
     let feels = Meteorology.feelsLike(tempF: tempF, relativeHumidity: rh)

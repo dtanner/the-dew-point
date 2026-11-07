@@ -31,7 +31,7 @@ guard let rep = NSBitmapImageRep(
     bitmapDataPlanes: nil, pixelsWide: px.w, pixelsHigh: px.h,
     bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
     colorSpaceName: .calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0) else {
-    FileHandle.standardError.write("failed to allocate bitmap\n".data(using: .utf8)!)
+    FileHandle.standardError.write(Data("failed to allocate bitmap\n".utf8))
     exit(1)
 }
 rep.size = canvas
@@ -86,7 +86,7 @@ centeredCaption("Word · rectangular", centerX: rect.midX, top: 56)
 NSGraphicsContext.restoreGraphicsState()
 
 guard let png = rep.representation(using: .png, properties: [:]) else {
-    FileHandle.standardError.write("failed to encode PNG\n".data(using: .utf8)!)
+    FileHandle.standardError.write(Data("failed to encode PNG\n".utf8))
     exit(1)
 }
 try FileManager.default.createDirectory(

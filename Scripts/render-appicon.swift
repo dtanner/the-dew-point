@@ -16,7 +16,7 @@ let outPath = "App/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
 let side = 1024
 
 guard let svg = NSImage(contentsOfFile: svgPath) else {
-    FileHandle.standardError.write("failed to load \(svgPath)\n".data(using: .utf8)!)
+    FileHandle.standardError.write(Data("failed to load \(svgPath)\n".utf8))
     exit(1)
 }
 
@@ -25,7 +25,7 @@ guard let cg = CGContext(
     data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: 0,
     space: CGColorSpace(name: CGColorSpace.sRGB)!,
     bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else {
-    FileHandle.standardError.write("failed to allocate context\n".data(using: .utf8)!)
+    FileHandle.standardError.write(Data("failed to allocate context\n".utf8))
     exit(1)
 }
 
@@ -40,7 +40,7 @@ NSGraphicsContext.restoreGraphicsState()
 
 guard let image = cg.makeImage(),
       let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else {
-    FileHandle.standardError.write("failed to encode PNG\n".data(using: .utf8)!)
+    FileHandle.standardError.write(Data("failed to encode PNG\n".utf8))
     exit(1)
 }
 try png.write(to: URL(fileURLWithPath: outPath))

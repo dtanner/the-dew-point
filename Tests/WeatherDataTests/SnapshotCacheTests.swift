@@ -76,9 +76,9 @@ struct SnapshotCacheTests {
     // A snapshot persisted before `precipitation` existed has no such key; it must
     // still decode (as `.none`) rather than being dropped on upgrade.
     @Test func decodesLegacySnapshotWithoutPrecipitation() throws {
-        let legacy = """
+        let legacy = Data("""
         {"temperatureF":71.5,"dewpointF":64.2,"asOf":0}
-        """.data(using: .utf8)!
+        """.utf8)
 
         let snapshot = try JSONDecoder().decode(WeatherSnapshot.self, from: legacy)
 

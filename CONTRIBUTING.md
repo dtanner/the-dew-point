@@ -39,7 +39,14 @@ just test       # run the engine suite (no Xcode/simulator needed)
 just build      # build the engine package
 just generate   # (re)generate the Xcode project
 just build-app  # compile the watch app for the simulator
+just lint       # SwiftLint (strict)
+just check      # tests, lint, and both builds — run before committing
+just run-sim    # build, install, and launch in the watch simulator
+just logs       # stream the app's logs from the watch simulator
+just deploy     # install on the paired Apple Watch (auto-discovered; or WATCH=<name-or-udid>)
 ```
+
+Run `just` for the full list.
 
 Building or running the watch app target requires the **watchOS platform
 runtime** to be installed (Xcode ▸ Settings ▸ Components, or
