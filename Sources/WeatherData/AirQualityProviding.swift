@@ -9,7 +9,9 @@ public protocol AirQualityProviding {
 }
 
 public enum AirQualityError: Error, Equatable {
-    /// The response carried no usable observation — typically no reporting
-    /// station within the search radius (AirNow coverage is US-only).
+    /// The response carried no usable observation.
     case noData
+    /// AirNow answered with an error message instead of observations — e.g. no
+    /// monitor within range (coverage is US-only), a bad key, or a retired endpoint.
+    case service(String)
 }

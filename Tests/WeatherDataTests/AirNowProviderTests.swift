@@ -28,16 +28,20 @@ struct AirNowProviderTests {
         )
     }
 
-    /// Trimmed but real-shaped AirNow response: one element per pollutant, with
-    /// the fields the provider ignores still present.
+    /// Real-shaped AirNow response: one element per pollutant, with the fields
+    /// the provider ignores still present.
     private let twoPollutants = """
     [
-      {"DateObserved":"2026-07-15 ","HourObserved":10,"LocalTimeZone":"CST",
-       "ReportingArea":"Minneapolis-St. Paul","StateCode":"MN",
-       "ParameterName":"O3","AQI":35,"Category":{"Number":1,"Name":"Good"}},
-      {"DateObserved":"2026-07-15 ","HourObserved":10,"LocalTimeZone":"CST",
-       "ReportingArea":"Minneapolis-St. Paul","StateCode":"MN",
-       "ParameterName":"PM2.5","AQI":52,"Category":{"Number":2,"Name":"Moderate"}}
+      {"dateObserved":"2026-11-07","hourObserved":"14:00","localTimeZone":"CST",
+       "reportingAreaName":"Southern Twin Cities Metro","siteID":null,"siteName":null,
+       "parameterName":"PM2.5","nowcastAQI":52,"aqiCategoryName":"Moderate",
+       "reportingAgency":"Minnesota Pollution Control Agency",
+       "lookupBehavior":"Highest Reading From Assigned Sites","consideredMonitors":"All","lookupBoundary":null},
+      {"dateObserved":"2026-11-07","hourObserved":"14:00","localTimeZone":"CST",
+       "reportingAreaName":"Southern Twin Cities Metro","siteID":null,"siteName":null,
+       "parameterName":"OZONE","nowcastAQI":35,"aqiCategoryName":"Good",
+       "reportingAgency":"Minnesota Pollution Control Agency",
+       "lookupBehavior":"Highest Reading From Assigned Sites","consideredMonitors":"All","lookupBoundary":null}
     ]
     """
 
@@ -48,7 +52,7 @@ struct AirNowProviderTests {
 
     @Test func ignoresUncomputedPollutants() async throws {
         let provider = makeProvider(returning: """
-        [{"ParameterName":"O3","AQI":-1},{"ParameterName":"PM2.5","AQI":40}]
+        [{"parameterName":"OZONE","nowcastAQI":-1},{"parameterName":"PM2.5","nowcastAQI":40}]
         """)
         #expect(try await provider.currentAQI() == 40)
     }
@@ -62,9 +66,18 @@ struct AirNowProviderTests {
 
     @Test func throwsWhenEveryPollutantIsUncomputed() async throws {
         let provider = makeProvider(returning: """
-        [{"ParameterName":"O3","AQI":-1}]
+        [{"parameterName":"OZONE","nowcastAQI":-1}]
         """)
         await #expect(throws: AirQualityError.noData) {
+            try await provider.currentAQI()
+        }
+    }
+
+    @Test func surfacesServiceErrorMessage() async throws {
+        let provider = makeProvider(returning: """
+        {"WebServiceError":[{"Message":"No observations were found for all monitors within 50 miles."}]}
+        """)
+        await #expect(throws: AirQualityError.service("No observations were found for all monitors within 50 miles.")) {
             try await provider.currentAQI()
         }
     }
@@ -84,6 +97,7 @@ struct AirNowProviderTests {
         let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         func value(_ name: String) -> String? { items.first { $0.name == name }?.value }
         #expect(url.host() == "www.airnowapi.org")
+        #expect(url.path() == "/aq/observation/current/ziplatlong/")
         #expect(value("latitude") == "44.98")
         #expect(value("longitude") == "-93.26")
         #expect(value("API_KEY") == "test-key")

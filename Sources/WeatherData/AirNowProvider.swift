@@ -12,10 +12,17 @@ import Foundation
 @MainActor
 public final class AirNowProvider: AirQualityProviding {
     /// One pollutant's observation in AirNow's current-observations response
-    /// (the array has one element per pollutant: O3, PM2.5, PM10, …). Only the
+    /// (the array has one element per pollutant: OZONE, PM2.5, PM10, …). Only the
     /// field we read; the rest of the payload is ignored.
     private struct Observation: Decodable {
-        let AQI: Int
+        let nowcastAQI: Int
+    }
+
+    /// AirNow's error body. It arrives with HTTP 200 in place of the observation
+    /// array, e.g. when no monitor is within range of the coordinate.
+    private struct ServiceErrorBody: Decodable {
+        struct Message: Decodable { let Message: String }
+        let WebServiceError: [Message]
     }
 
     private let apiKey: String
@@ -60,14 +67,13 @@ public final class AirNowProvider: AirQualityProviding {
     }
 
     static func url(for coordinate: CLLocationCoordinate2D, apiKey: String) -> URL {
-        var components = URLComponents(string: "https://www.airnowapi.org/aq/observation/latLong/current/")!
+        // AirNow picks the reporting area itself (monitors within 50 miles);
+        // this service takes no search-radius parameter.
+        var components = URLComponents(string: "https://www.airnowapi.org/aq/observation/current/ziplatlong/")!
         components.queryItems = [
             .init(name: "format", value: "application/json"),
             .init(name: "latitude", value: String(coordinate.latitude)),
             .init(name: "longitude", value: String(coordinate.longitude)),
-            // Search radius in miles: AirNow returns the closest reporting area
-            // within it, or an empty array if there is none.
-            .init(name: "distance", value: "25"),
             .init(name: "API_KEY", value: apiKey),
         ]
         return components.url!
@@ -78,8 +84,12 @@ public final class AirNowProvider: AirQualityProviding {
     /// pollutant it couldn't compute as -1, so those are dropped rather than ever
     /// winning the max.
     static func overallAQI(from data: Data) throws -> Int {
-        let observations = try JSONDecoder().decode([Observation].self, from: data)
-        guard let worst = observations.map(\.AQI).filter({ $0 >= 0 }).max() else {
+        let decoder = JSONDecoder()
+        if let body = try? decoder.decode(ServiceErrorBody.self, from: data) {
+            throw AirQualityError.service(body.WebServiceError.map(\.Message).joined(separator: " "))
+        }
+        let observations = try decoder.decode([Observation].self, from: data)
+        guard let worst = observations.map(\.nowcastAQI).filter({ $0 >= 0 }).max() else {
             throw AirQualityError.noData
         }
         return worst
