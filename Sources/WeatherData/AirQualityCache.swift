@@ -36,4 +36,12 @@ public struct AirQualityCache {
         guard let data = defaults.data(forKey: Self.key) else { return nil }
         return try? JSONDecoder().decode(CachedAirQuality.self, from: data)
     }
+
+    /// The cached AQI if it was fetched within `maxAge`, else `nil`. For the
+    /// complication's fallback when a live fetch fails: air quality can swing
+    /// within hours, so an old number shown as current misleads more than a dash.
+    public func aqi(notOlderThan maxAge: TimeInterval, now: Date = .now) -> Int? {
+        guard let reading = load(), now.timeIntervalSince(reading.fetchedAt) < maxAge else { return nil }
+        return reading.aqi
+    }
 }

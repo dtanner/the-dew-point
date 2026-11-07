@@ -7,7 +7,7 @@ import WidgetKit
 /// slot and inline text slots like the Photos face's top/bottom lines (labeled
 /// "AQI 42" in both, since a bare number outside a round slot reads as nothing in
 /// particular). The data comes from AirNow (WeatherKit has no air quality), so it
-/// needs the AirNow API key baked into the build — without one it shows the last
+/// needs the AirNow API key baked into the build — without one it shows a recent
 /// cached value or a dash.
 struct AQIComplication: Widget {
     var body: some WidgetConfiguration {
@@ -26,8 +26,8 @@ struct AQIComplication: Widget {
 /// tying them together would make either one's failure blank the other.
 struct AQIEntry: TimelineEntry {
     let date: Date
-    /// `nil` when there has never been a reading to show (no API key baked in, or
-    /// no fetch has succeeded yet); renders as a dash.
+    /// `nil` when there's no recent reading to show (no API key baked in, or no
+    /// fetch has succeeded within `AQIProvider.maxCacheAge`); renders as a dash.
     let aqi: Int?
 }
 
@@ -37,9 +37,15 @@ extension AQIEntry {
 }
 
 /// Timeline provider for the AQI complication, mirroring `ComfortProvider`:
-/// self-fetch on a ~30-minute cadence through the TTL gate, fall back to the last
-/// cached reading when a live fetch isn't possible, so the glance never goes blank.
+/// self-fetch on a ~30-minute cadence through the TTL gate, and fall back to the
+/// last cached reading when a live fetch isn't possible — but only while that
+/// reading is recent, so an outage shows as a dash rather than a stale number.
 struct AQIProvider: TimelineProvider {
+    /// How old a cached reading may be and still stand in for a failed fetch.
+    /// AirNow updates hourly and background refresh runs about hourly, so this
+    /// rides out a couple of missed refreshes without showing hours-old air.
+    static let maxCacheAge: TimeInterval = 3 * 60 * 60
+
     func placeholder(in context: Context) -> AQIEntry { .sample }
 
     func getSnapshot(in context: Context, completion: @escaping (AQIEntry) -> Void) {
@@ -63,9 +69,9 @@ struct AQIProvider: TimelineProvider {
     @MainActor
     private static func currentEntry() async -> AQIEntry {
         // No key in this build (Secrets.xcconfig was empty or absent): live
-        // fetching is off, so show whatever the cache last saw — usually nothing.
+        // fetching is off, so show whatever the cache recently saw — usually nothing.
         guard let key = AirNowProvider.bundledAPIKey else {
-            return AQIEntry(date: .now, aqi: AirQualityCache().load()?.aqi)
+            return AQIEntry(date: .now, aqi: AirQualityCache().aqi(notOlderThan: maxCacheAge))
         }
         let provider = CachingAirQualityProvider(
             wrapping: AirNowProvider(apiKey: key, location: LastKnownLocationProvider()),
@@ -74,7 +80,7 @@ struct AQIProvider: TimelineProvider {
         if let aqi = try? await provider.currentAQI() {
             return AQIEntry(date: .now, aqi: aqi)
         }
-        return AQIEntry(date: .now, aqi: AirQualityCache().load()?.aqi)
+        return AQIEntry(date: .now, aqi: AirQualityCache().aqi(notOlderThan: maxCacheAge))
     }
 }
 
