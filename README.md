@@ -35,8 +35,8 @@ hosted [comfort band editor](https://dtanner.github.io/the-dew-point/comfort-edi
 
 ## Screenshots
 
-The app screen and the watch-face word complication, both showing the same sample
-condition (_Muggy_):
+All showing the same sample condition (_Muggy_). On Apple Watch, the app screen
+and the word complication on a watch face:
 
 <p>
   <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/app.png" width="220" alt="The Dew Point app showing Muggy, 70° / dew 64°">
@@ -44,8 +44,7 @@ condition (_Muggy_):
   <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/complications.png" width="240" alt="The Word complication showing Muggy">
 </p>
 
-The iPhone app's Now and Today tabs, with the same reading and the forecast's
-word changes:
+On iPhone, the Now and Today tabs, which add the forecast's word changes:
 
 <p>
   <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/iphone-now.png" width="220" alt="The iPhone app's Now tab showing Muggy, 70° · dew 64°, AQI 38, and the coming word changes">
