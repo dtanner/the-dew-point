@@ -44,6 +44,15 @@ condition (_Muggy_):
   <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/complications.png" width="240" alt="The Word complication showing Muggy">
 </p>
 
+The iPhone app's Now and Today tabs, with the same reading and the forecast's
+word changes:
+
+<p>
+  <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/iphone-now.png" width="220" alt="The iPhone app's Now tab showing Muggy, 70° · dew 64°, AQI 38, and the coming word changes">
+  &nbsp;&nbsp;
+  <img src="https://github.com/dtanner/the-dew-point/releases/download/assets/iphone-today.png" width="220" alt="The iPhone app's Today tab with an hourly temperature and dew point chart and the day's word changes">
+</p>
+
 ## Contributing
 
 Architecture notes, build instructions, and the AirNow API key setup live in
