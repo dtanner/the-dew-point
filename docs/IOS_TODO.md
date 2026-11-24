@@ -26,7 +26,7 @@ list is empty.
   `DEWPOINT_FAKE` set, `Providers.forecast()` serves `FakeForecastProvider.sampleDay()`.
 - [x] **3. Tabs, "Coming up" card, Today tab.** `Phone/RootView.swift` owns the
   refresh/sync tasks; `Phone/TodayView.swift` has the Swift Charts chart and the
-  change list. **Still to eyeball:** the Today tab in the simulator.
+  change list. Verified on device 2026-11-24.
 - [x] **4. Bands tab.** `BandLayout` in `ThermalComfort` samples `classify` for
   the dew-point segments at a temperature and the words per temperature band
   (`BandLayoutTests`); `Phone/BandsView.swift` draws them, and tapping a segment
