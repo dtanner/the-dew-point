@@ -19,6 +19,9 @@ struct RootView: View {
             Tab("Today", systemImage: "clock") {
                 TodayView(model: model)
             }
+            Tab("Bands", systemImage: "square.grid.2x2") {
+                BandsView(model: model)
+            }
         }
         // The app's look is built for dark only, matching the watch, where the
         // AQI colors are tuned for a dark background (see AQICategoryColor).

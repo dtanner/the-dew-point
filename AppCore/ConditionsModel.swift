@@ -23,6 +23,10 @@ final class ConditionsModel {
     /// The coming hours, or empty when there's no forecast source (the watch) or no
     /// forecast yet. Best-effort, like `aqi`.
     private(set) var hours: [ForecastHour] = []
+    /// Bumped on every change to the custom words. The store lives in UserDefaults,
+    /// which Observation can't see, so everything that reads it reads this first to
+    /// re-render when a word changes.
+    private var customizationsRevision = 0
     private let provider: any WeatherProviding
     private let airQuality: (any AirQualityProviding)?
     private let forecast: (any ForecastProviding)?
@@ -72,12 +76,26 @@ final class ConditionsModel {
     /// band-customizable (no comfort band is on screen).
     func isCustomized(_ snapshot: WeatherSnapshot) -> Bool {
         guard snapshot.precipitation == nil else { return false }
-        return customizations.customization(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF) != nil
+        return isCustomized(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+    }
+
+    /// Whether the band containing these conditions has a custom word.
+    func isCustomized(tempF: Double, dewpointF: Double) -> Bool {
+        _ = customizationsRevision
+        return customizations.customization(forTempF: tempF, dewpointF: dewpointF) != nil
+    }
+
+    /// The word shown for `band`: the user's, if set, otherwise `descriptor` (the
+    /// band's default).
+    func word(for band: ComfortBand, default descriptor: ComfortDescriptor) -> String {
+        _ = customizationsRevision
+        return customizations.customization(for: band)?.word ?? descriptor.word
     }
 
     /// The forecast's word changes from the current hour on, each resolved the way
     /// the shown word is (precipitation, then the user's word, then the default).
     var forecastChanges: [WordChange] {
+        _ = customizationsRevision
         let currentHourStart = Date.now.addingTimeInterval(-3600)
         return wordChanges(in: hours.filter { $0.date > currentHourStart }) { tempF, dewpointF in
             customizations.resolvedDescriptor(forTempF: tempF, dewpointF: dewpointF).word
@@ -109,11 +127,7 @@ final class ConditionsModel {
 
     private func applyCloudCustomizations() {
         guard customizations.syncFromCloud() else { return }
-        if case let .loaded(snapshot, _) = phase {
-            reresolve(snapshot)
-        } else {
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        customizationsChanged()
     }
 
     /// The engine's own word for `snapshot`'s band, ignoring any customization, so
@@ -125,25 +139,39 @@ final class ConditionsModel {
     /// Saves a custom word for the band `snapshot` falls in, then re-renders. A word
     /// that fails `ComfortWord.validate` is ignored, leaving the current word unchanged.
     func customize(_ rawWord: String, for snapshot: WeatherSnapshot) {
+        customize(rawWord, tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+    }
+
+    /// Saves a custom word for the band containing these conditions — any reading
+    /// in it, not just the current one — then re-renders. An invalid word is ignored.
+    func customize(_ rawWord: String, tempF: Double, dewpointF: Double) {
         guard let word = ComfortWord.validate(rawWord) else { return }
-        customizations.setWord(word, forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
-        reresolve(snapshot)
+        customizations.setWord(word, forTempF: tempF, dewpointF: dewpointF)
+        customizationsChanged()
     }
 
     /// Removes the customization for `snapshot`'s band, reverting to the default word.
     func removeCustomization(for snapshot: WeatherSnapshot) {
-        customizations.removeCustomization(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
-        reresolve(snapshot)
+        removeCustomization(tempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
+    }
+
+    /// Removes the customization for the band containing these conditions.
+    func removeCustomization(tempF: Double, dewpointF: Double) {
+        customizations.removeCustomization(forTempF: tempF, dewpointF: dewpointF)
+        customizationsChanged()
     }
 
     private func resolvedDescriptor(for snapshot: WeatherSnapshot) -> ComfortDescriptor {
         snapshot.precipitation ?? customizations.resolvedDescriptor(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF)
     }
 
-    // Re-render the current reading after a customization change without refetching,
-    // and nudge the complications so the watch face matches the app.
-    private func reresolve(_ snapshot: WeatherSnapshot) {
-        phase = .loaded(snapshot, resolvedDescriptor(for: snapshot))
+    // Re-render after a custom-word change without refetching, and nudge the
+    // complications so the watch face matches the app.
+    private func customizationsChanged() {
+        customizationsRevision += 1
+        if case let .loaded(snapshot, _) = phase {
+            phase = .loaded(snapshot, resolvedDescriptor(for: snapshot))
+        }
         WidgetCenter.shared.reloadAllTimelines()
     }
 

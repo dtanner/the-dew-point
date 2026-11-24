@@ -90,8 +90,12 @@ public struct CustomizationStore {
     /// or `nil`. Newest wins if two saved samples share a band — only reachable if a
     /// later threshold change moved two previously-distinct samples together.
     public func customization(forTempF tempF: Double, dewpointF: Double) -> Customization? {
-        let band = classify(tempF: tempF, dewpointF: dewpointF).band
-        return all().last { $0.band == band }
+        customization(for: classify(tempF: tempF, dewpointF: dewpointF).band)
+    }
+
+    /// The override for `band`, or `nil`. Newest wins, as above.
+    public func customization(for band: ComfortBand) -> Customization? {
+        all().last { $0.band == band }
     }
 
     /// The descriptor to show for these conditions: the user's custom word for this

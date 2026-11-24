@@ -25,15 +25,14 @@ list is empty.
 - [x] **3. Tabs, "Coming up" card, Today tab.** `Phone/RootView.swift` owns the
   refresh/sync tasks; `Phone/TodayView.swift` has the Swift Charts chart and the
   change list. **Still to eyeball:** the Today tab in the simulator.
+- [x] **4. Bands tab.** `BandLayout` in `ThermalComfort` samples `classify` for
+  the dew-point segments at a temperature and the words per temperature band
+  (`BandLayoutTests`); `Phone/BandsView.swift` draws them, and tapping a segment
+  opens `CustomWordEditor` for that band. Open question for the spec: the
+  80–89°F "Steamy" rule (`hotSteamy`) is unreachable — see
+  `everyReachableBandAppearsOnceInItsOwnRow`.
 
 ## To do
-
-- [ ] **4. Bands tab ("Why this word").**
-  - Derive display data from `classify` by sampling, not by restating the
-    thresholds, so it can't drift from the engine: word segments across dew
-    point at the current temperature, and the ordered words per temperature
-    band. Lives in `ThermalComfort`, tested.
-  - Tapping a segment opens the word editor for that band.
 
 - [ ] **5. Words tab.**
   - Customizations are per *band*, not per word (Muggy appears in four bands),
