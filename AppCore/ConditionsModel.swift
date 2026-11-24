@@ -206,7 +206,13 @@ final class ConditionsModel {
         case LocationError.unavailable:
             return "Couldn’t determine your location."
         default:
+            #if DEBUG
+            // On-device builds have no other window into why a fetch failed
+            // (WeatherKit authorization, network); release builds keep it plain.
+            return "Couldn’t load current conditions.\n\(error)"
+            #else
             return "Couldn’t load current conditions."
+            #endif
         }
     }
 }

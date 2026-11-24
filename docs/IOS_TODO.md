@@ -16,8 +16,10 @@ list is empty.
   `CustomizationStore(cloud:)` / `.synced`; `ConditionsModel.syncCustomizations()`
   runs from each app's root view. First contact merges (cloud wins per band), later
   syncs replace so deletes propagate, and an empty device never pushes. Tests in
-  `CustomizationSyncTests`. **Still to verify on devices** (simulators need a
-  signed-in iCloud account): edit on phone → watch picks it up, and the reverse.
+  `CustomizationSyncTests`. Verified on devices 2026-11-24 (iPhone 15 Pro +
+  Ultra): a word saved on either shows on the other when its app opens. **Still to
+  check:** the watch complication picking it up through background refresh without
+  opening the watch app.
 - [x] **2. Hourly forecast.** `ForecastProviding`, `WeatherKitForecastProvider`,
   `CachingForecastProvider` (App Group, 30 min) and `wordChanges(in:comfortWord:)`
   in `Sources/WeatherData/Forecast.swift`; tests in `ForecastTests`. With
@@ -48,6 +50,9 @@ list is empty.
 ## To do
 
 - [ ] **7. Release readiness.**
+  - Done 2026-11-24: WeatherKit's **App Services** checkbox on the
+    `com.dantanner.dewpoint` App ID (automatic signing sets the capability but
+    not this; without it every fetch fails with a WeatherKit auth error).
   - Enable WeatherKit and iCloud (key-value) on the `com.dantanner.dewpoint`
     App ID if automatic signing doesn't, and WeatherKit + the App Group on the
     new `com.dantanner.dewpoint.widget` App ID. The ASC API key can't register a

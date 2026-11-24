@@ -174,6 +174,42 @@ deploy: generate
         build/dd/Build/Products/Debug-watchos/TheDewPoint.app
     xcrun devicectl device process launch --device "$dev" {{bundle_id}}
 
+# The iPhone for `just deploy-phone`. Empty auto-discovers the first paired one;
+# override with `PHONE=<name-or-udid> just deploy-phone`.
+phone := env_var_or_default("PHONE", "")
+
+# Build, sign, install, and launch the iPhone app (with its widgets) on a paired
+# iPhone. The phone must be unlocked with Developer Mode on. The embedded watch app
+# isn't pushed to the watch by this; use `just deploy` for the watch.
+[doc("Build, sign, install, and launch on a paired iPhone (auto-discovers it; or `PHONE=<name-or-udid> just deploy-phone`).")]
+deploy-phone: generate
+    #!/usr/bin/env zsh
+    set -eu
+    dev="{{phone}}"
+    if [[ -z "$dev" ]]; then
+        json=$(mktemp)
+        xcrun devicectl list devices --json-output "$json" >/dev/null
+        # First physical, paired iPhone (devicectl also lists simulators).
+        dev=$(python3 -c "import json; ds=json.load(open('$json'))['result']['devices']; ok=lambda d: d.get('hardwareProperties',{}).get('productType','').startswith('iPhone') and d.get('hardwareProperties',{}).get('reality')!='simulated' and d.get('connectionProperties',{}).get('pairingState')=='paired' and d.get('connectionProperties',{}).get('tunnelState')!='unavailable'; print(next((d['hardwareProperties']['udid'] for d in ds if ok(d)), ''))")
+        rm -f "$json"
+    fi
+    if [[ -z "$dev" ]]; then
+        echo "No paired iPhone reachable. Run 'just devices' to inspect, or PHONE=<name-or-udid> just deploy-phone"
+        exit 1
+    fi
+    # Building for the specific device registers it (and any new App ID, such as
+    # the widget extension's) through automatic provisioning.
+    xcodebuild build \
+        -project TheDewPoint.xcodeproj \
+        -scheme TheDewPointPhone \
+        -destination "platform=iOS,id=$dev" \
+        -allowProvisioningUpdates \
+        -derivedDataPath build/dd-phone \
+        -quiet
+    xcrun devicectl device install app --device "$dev" \
+        build/dd-phone/Build/Products/Debug-iphoneos/TheDewPoint.app
+    xcrun devicectl device process launch --device "$dev" {{phone_bundle_id}}
+
 # Run SwiftLint (strict: warnings fail too)
 lint:
     swiftlint lint --strict --quiet
