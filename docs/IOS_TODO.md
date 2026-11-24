@@ -17,9 +17,9 @@ list is empty.
   runs from each app's root view. First contact merges (cloud wins per band), later
   syncs replace so deletes propagate, and an empty device never pushes. Tests in
   `CustomizationSyncTests`. Verified on devices 2026-11-24 (iPhone 15 Pro +
-  Ultra): a word saved on either shows on the other when its app opens. **Still to
-  check:** the watch complication picking it up through background refresh without
-  opening the watch app.
+  Ultra): a word saved on either shows on the other when its app opens, and the
+  watch complication picks it up through background refresh without opening the
+  watch app.
 - [x] **2. Hourly forecast.** `ForecastProviding`, `WeatherKitForecastProvider`,
   `CachingForecastProvider` (App Group, 30 min) and `wordChanges(in:comfortWord:)`
   in `Sources/WeatherData/Forecast.swift`; tests in `ForecastTests`. With
@@ -43,20 +43,19 @@ list is empty.
   inline) plus Dew Point and Air Quality Lock Screen circles. Fetching lives in
   `WidgetShared/WidgetReadings.swift`, shared with the watch complication;
   `upcomingWordChanges` in WeatherData keeps the widget and the app's card in
-  step. Small and medium eyeballed in the simulator. **Still to eyeball:** the
-  Lock Screen widgets, and the watch complication on-device after the provider
-  refactor.
+  step. Small and medium verified with real weather on device 2026-11-24, as was
+  the watch complication after the provider refactor. **Still to eyeball:** the
+  Lock Screen widgets.
 
 ## To do
 
 - [ ] **7. Release readiness.**
-  - Done 2026-11-24: WeatherKit's **App Services** checkbox on the
-    `com.dantanner.dewpoint` App ID (automatic signing sets the capability but
-    not this; without it every fetch fails with a WeatherKit auth error).
-  - Enable WeatherKit and iCloud (key-value) on the `com.dantanner.dewpoint`
-    App ID if automatic signing doesn't, and WeatherKit + the App Group on the
-    new `com.dantanner.dewpoint.widget` App ID. The ASC API key can't register a
-    new App ID: run one archive with plain `-allowProvisioningUpdates` first.
+  - Done 2026-11-24: App IDs set up. Automatic signing registered
+    `com.dantanner.dewpoint.widget` and added iCloud and the App Group; WeatherKit's
+    **App Services** checkbox had to be ticked by hand on both
+    `com.dantanner.dewpoint` and `.widget` (without it every fetch fails with a
+    WeatherKit auth error). The ASC API key can't register App IDs, so any future
+    new one needs a plain `-allowProvisioningUpdates` build first.
   - TestFlight build: check that the watch app still installs standalone and
     updates over the existing watch-only version.
   - App Store screenshots for the iPhone (README and CONTRIBUTING already
