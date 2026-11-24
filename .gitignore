@@ -18,6 +18,8 @@ Complication/Info.plist
 Complication/*.entitlements
 Phone/Info.plist
 Phone/*.entitlements
+PhoneWidget/Info.plist
+PhoneWidget/*.entitlements
 *.xcworkspace/
 xcuserdata/
 DerivedData/
