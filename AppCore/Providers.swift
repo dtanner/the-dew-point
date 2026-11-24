@@ -67,7 +67,9 @@ enum Providers {
     static func forecast() -> any ForecastProviding {
         #if DEBUG
         if ProcessInfo.processInfo.environment["DEWPOINT_FAKE"] != nil {
-            return FakeForecastProvider.sampleDay()
+            // A zero TTL writes the canned day to the shared cache on every fetch,
+            // which is how the iPhone widgets (another process) see it too.
+            return CachingForecastProvider(wrapping: FakeForecastProvider.sampleDay(), ttl: 0)
         }
         #endif
         return CachingForecastProvider(wrapping: WeatherKitForecastProvider(), ttl: 30 * 60)

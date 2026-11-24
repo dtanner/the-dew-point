@@ -139,3 +139,16 @@ public func wordChanges(
     }
     return changes
 }
+
+/// The word changes still to come: the forecast from the hour containing `now`,
+/// minus the run `currentWord` belongs to. Shared by the app's "Coming up" card and
+/// the iPhone widgets so both say the same thing.
+public func upcomingWordChanges(
+    in hours: [ForecastHour],
+    now: Date,
+    currentWord: String,
+    comfortWord: (_ tempF: Double, _ dewpointF: Double) -> String
+) -> [WordChange] {
+    let changes = wordChanges(in: hours.filter { $0.date > now.addingTimeInterval(-3600) }, comfortWord: comfortWord)
+    return changes.first?.word == currentWord ? Array(changes.dropFirst()) : changes
+}

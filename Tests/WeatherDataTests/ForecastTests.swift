@@ -23,6 +23,23 @@ struct ForecastTests {
         describe(tempF: tempF, dewpointF: dewpointF).word
     }
 
+    // Hours that ended before the current one are gone, and the run the current
+    // word belongs to isn't "upcoming".
+    @Test func upcomingSkipsPastHoursAndTheCurrentRun() {
+        let hours = [hour(0, 82, 68), hour(1, 70, 64), hour(2, 72, 65), hour(3, 70, 60)]
+        let now = start.addingTimeInterval(3600 + 600)
+        let upcoming = upcomingWordChanges(in: hours, now: now, currentWord: "Muggy", comfortWord: engineWord)
+        #expect(upcoming.map(\.word) == ["Sticky"])
+    }
+
+    // If the current word differs from the forecast's (say, a custom word was just
+    // saved, or it's raining now), the first forecast change is still news.
+    @Test func upcomingKeepsTheFirstChangeWhenTheWordDiffers() {
+        let hours = [hour(0, 70, 64), hour(1, 70, 60)]
+        let upcoming = upcomingWordChanges(in: hours, now: start, currentWord: "Heavy Rain", comfortWord: engineWord)
+        #expect(upcoming.map(\.word) == ["Muggy", "Sticky"])
+    }
+
     @Test func collapsesRunsOfTheSameWord() {
         let hours = [hour(0, 70, 64), hour(1, 72, 65), hour(2, 82, 68), hour(3, 70, 60)]
         let changes = wordChanges(in: hours, comfortWord: engineWord)

@@ -93,6 +93,48 @@ targets:
         product: WeatherData
       # Embeds the watch app under Watch/ so the one App Store record ships both.
       - target: TheDewPoint
+      - target: TheDewPointPhoneWidget
+
+  # iPhone Home and Lock Screen widgets. Fetches on its own timeline like the
+  # watch complication, sharing its fetch code (WidgetShared) and reading the
+  # app's caches and custom words through the App Group.
+  TheDewPointPhoneWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - PhoneWidget
+      - WidgetShared
+      - Shared
+    configFiles:
+      Debug: Config/Secrets.xcconfig
+      Release: Config/Secrets.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint.widget
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: PhoneWidget/Info.plist
+      properties:
+        CFBundleDisplayName: The Dew Point
+        # Must match the app's version or App Store validation rejects the build.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
+        AirNowAPIKey: $(AIRNOW_API_KEY)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: PhoneWidget/TheDewPointPhoneWidget.entitlements
+      properties:
+        com.apple.developer.weatherkit: true
+        # The iPhone app's group: its readings, forecast and custom words.
+        com.apple.security.application-groups:
+          - group.com.dantanner.dewpoint
+    dependencies:
+      - package: DewPoint
+        product: ThermalComfort
+      - package: DewPoint
+        product: WeatherData
 
   TheDewPoint:
     type: application
@@ -154,6 +196,8 @@ targets:
     platform: watchOS
     sources:
       - Complication
+      # Fetch code shared with the iPhone widgets.
+      - WidgetShared
       - Shared
     # Same AirNow key wiring as the app — the widget extension is a separate
     # process with its own bundle, so it needs its own copy of the key.

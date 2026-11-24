@@ -36,17 +36,22 @@ list is empty.
   range from `BandEntry` (sampled extents plus a reading to save against). The
   band editor sheet and range labels shared with the Bands tab live in
   `Phone/BandEditing.swift`.
+- [x] **6. iPhone widgets.** `TheDewPointPhoneWidget` extension (`PhoneWidget/`):
+  Comfort Word (small, medium with coming-up changes, Lock Screen rectangular and
+  inline) plus Dew Point and Air Quality Lock Screen circles. Fetching lives in
+  `WidgetShared/WidgetReadings.swift`, shared with the watch complication;
+  `upcomingWordChanges` in WeatherData keeps the widget and the app's card in
+  step. Small and medium eyeballed in the simulator. **Still to eyeball:** the
+  Lock Screen widgets, and the watch complication on-device after the provider
+  refactor.
 
 ## To do
 
-- [ ] **6. iPhone widgets.**
-  - iOS widget extension: small, medium, Lock Screen circular/rectangular/inline.
-  - Reuse the complication's timeline provider where possible (move shared
-    pieces next to `Shared/`), with the `AQICategory` colors.
-
 - [ ] **7. Release readiness.**
   - Enable WeatherKit and iCloud (key-value) on the `com.dantanner.dewpoint`
-    App ID if automatic signing doesn't.
+    App ID if automatic signing doesn't, and WeatherKit + the App Group on the
+    new `com.dantanner.dewpoint.widget` App ID. The ASC API key can't register a
+    new App ID: run one archive with plain `-allowProvisioningUpdates` first.
   - TestFlight build: check that the watch app still installs standalone and
     updates over the existing watch-only version.
   - README / CONTRIBUTING: describe the iPhone app; App Store screenshots.

@@ -27,7 +27,7 @@ struct AQIComplication: Widget {
 struct AQIEntry: TimelineEntry {
     let date: Date
     /// `nil` when there's no recent reading to show (no API key baked in, or no
-    /// fetch has succeeded within `AQIProvider.maxCacheAge`); renders as a dash.
+    /// fetch has succeeded within `WidgetReadings.maxAQICacheAge`); renders as a dash.
     let aqi: Int?
 }
 
@@ -36,16 +36,10 @@ extension AQIEntry {
     static let sample = AQIEntry(date: .now, aqi: 42)
 }
 
-/// Timeline provider for the AQI complication, mirroring `ComfortProvider`:
-/// self-fetch on a ~30-minute cadence through the TTL gate, and fall back to the
-/// last cached reading when a live fetch isn't possible — but only while that
-/// reading is recent, so an outage shows as a dash rather than a stale number.
+/// Timeline provider for the AQI complication: `WidgetReadings.aqi()` on a
+/// ~30-minute cadence, which shows a dash rather than a stale number during an
+/// outage.
 struct AQIProvider: TimelineProvider {
-    /// How old a cached reading may be and still stand in for a failed fetch.
-    /// AirNow updates hourly and background refresh runs about hourly, so this
-    /// rides out a couple of missed refreshes without showing hours-old air.
-    static let maxCacheAge: TimeInterval = 3 * 60 * 60
-
     func placeholder(in context: Context) -> AQIEntry { .sample }
 
     func getSnapshot(in context: Context, completion: @escaping (AQIEntry) -> Void) {
@@ -54,33 +48,16 @@ struct AQIProvider: TimelineProvider {
             return
         }
         nonisolated(unsafe) let completion = completion
-        Task { completion(await Self.currentEntry()) }
+        Task { completion(AQIEntry(date: .now, aqi: await WidgetReadings.aqi())) }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<AQIEntry>) -> Void) {
         nonisolated(unsafe) let completion = completion
         Task {
-            let entry = await Self.currentEntry()
-            let next = Date.now.addingTimeInterval(30 * 60)
+            let entry = AQIEntry(date: .now, aqi: await WidgetReadings.aqi())
+            let next = Date.now.addingTimeInterval(WidgetReadings.refreshInterval)
             completion(Timeline(entries: [entry], policy: .after(next)))
         }
-    }
-
-    @MainActor
-    private static func currentEntry() async -> AQIEntry {
-        // No key in this build (Secrets.xcconfig was empty or absent): live
-        // fetching is off, so show whatever the cache recently saw — usually nothing.
-        guard let key = AirNowProvider.bundledAPIKey else {
-            return AQIEntry(date: .now, aqi: AirQualityCache().aqi(notOlderThan: maxCacheAge))
-        }
-        let provider = CachingAirQualityProvider(
-            wrapping: AirNowProvider(apiKey: key, location: LastKnownLocationProvider()),
-            ttl: 30 * 60
-        )
-        if let aqi = try? await provider.currentAQI() {
-            return AQIEntry(date: .now, aqi: aqi)
-        }
-        return AQIEntry(date: .now, aqi: AirQualityCache().aqi(notOlderThan: maxCacheAge))
     }
 }
 

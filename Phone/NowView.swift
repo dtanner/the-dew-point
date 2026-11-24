@@ -24,12 +24,6 @@ struct NowView: View {
     }
 }
 
-/// Colors shared by the iPhone screens, matching the app icon's deep navy.
-enum Palette {
-    static let background = Color(red: 0.024, green: 0.078, blue: 0.114)
-    static let surface = Color(red: 0.047, green: 0.137, blue: 0.192)
-}
-
 private struct ConditionsView: View {
     let snapshot: WeatherSnapshot
     let descriptor: ComfortDescriptor

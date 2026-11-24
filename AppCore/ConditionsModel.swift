@@ -112,8 +112,10 @@ final class ConditionsModel {
     /// current word belongs to.
     var upcomingChanges: [WordChange] {
         guard case let .loaded(_, descriptor) = phase else { return [] }
-        let changes = forecastChanges
-        return changes.first?.word == descriptor.word ? Array(changes.dropFirst()) : changes
+        _ = customizationsRevision
+        return upcomingWordChanges(in: hours, now: .now, currentWord: descriptor.word) { tempF, dewpointF in
+            customizations.resolvedDescriptor(forTempF: tempF, dewpointF: dewpointF).word
+        }
     }
 
     /// Keeps custom words in step with the user's other devices: pulls the iCloud
