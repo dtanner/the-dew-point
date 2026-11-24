@@ -38,7 +38,7 @@ generate:
 complications:
     swift Scripts/render-complications.swift
 
-# Render the app icon into the asset catalog (macOS only).
+# Render the app icon into the watch and iPhone asset catalogs (macOS only).
 appicon:
     swift Scripts/render-appicon.swift
 
@@ -85,6 +85,44 @@ run-sim-fake temp dew precip="" aqi="": run-sim
     [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
     xcrun simctl launch --terminate-running-processes \
         '{{sim}}' {{bundle_id}}
+
+# The iPhone simulator for `just run-phone-sim`.
+# Override: `just run-phone-sim phone_sim="iPhone 17e"`.
+phone_sim := "iPhone 17 Pro"
+phone_bundle_id := "com.dantanner.dewpoint"
+
+# Compile the iPhone app (which embeds the watch app) for the simulator.
+build-phone: generate
+    xcodebuild build \
+        -project TheDewPoint.xcodeproj \
+        -scheme TheDewPointPhone \
+        -destination 'generic/platform=iOS Simulator' \
+        -quiet
+
+# Build, install, and launch the iPhone app in the simulator. Pass fake conditions
+# the same way as `run-sim-fake`, e.g. `just run-phone-sim 70 64 "" 42`, since
+# WeatherKit doesn't work in simulators.
+[doc('Run the iPhone app in the simulator, optionally with fake conditions: `just run-phone-sim 70 64 "Heavy Rain" 42`.')]
+run-phone-sim temp="" dew="" precip="" aqi="": generate
+    #!/usr/bin/env zsh
+    set -eu
+    xcodebuild build \
+        -project TheDewPoint.xcodeproj \
+        -scheme TheDewPointPhone \
+        -destination 'platform=iOS Simulator,name={{phone_sim}}' \
+        -derivedDataPath build/dd-phone-sim \
+        -quiet
+    open -b com.apple.dt.Devices
+    xcrun simctl boot '{{phone_sim}}' 2>/dev/null || true
+    xcrun simctl install '{{phone_sim}}' \
+        build/dd-phone-sim/Build/Products/Debug-iphonesimulator/TheDewPoint.app
+    if [[ -n "{{temp}}" && -n "{{dew}}" ]]; then
+        fake="{{temp}},{{dew}}"
+        [[ -n "{{precip}}" ]] && fake+=",{{precip}}"
+        export SIMCTL_CHILD_DEWPOINT_FAKE="$fake"
+    fi
+    [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
+    xcrun simctl launch --terminate-running-processes '{{phone_sim}}' {{phone_bundle_id}}
 
 # Stream the watch app's logs from the simulator.
 logs:
@@ -141,7 +179,7 @@ lint:
     swiftlint lint --strict --quiet
 
 # Run tests, lint, and build — the same checks the pre-commit hook runs
-check: test lint build build-app
+check: test lint build build-app build-phone
 
 # Install a git pre-commit hook that runs `just check` before each commit
 install-hooks:
@@ -201,9 +239,9 @@ release kind: test lint
     )
     echo "Releasing $version"
     xcodegen generate
-    # Archives the stub iOS container (which embeds the watch app) — see the
-    # TheDewPointContainer comment in project.yml for why.
-    xcodebuild -project TheDewPoint.xcodeproj -scheme TheDewPointContainer \
+    # Archives the iPhone app, which embeds the watch app — see the
+    # TheDewPointPhone comment in project.yml.
+    xcodebuild -project TheDewPoint.xcodeproj -scheme TheDewPointPhone \
         -destination "generic/platform=iOS" \
         -archivePath build/release/TheDewPoint.xcarchive \
         -allowProvisioningUpdates \

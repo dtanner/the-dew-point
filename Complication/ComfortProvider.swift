@@ -3,10 +3,8 @@ import ThermalComfort
 import WeatherData
 import WidgetKit
 
-/// Drives both complications: fetches current conditions, runs them through the
-/// comfort engine, and falls back to the last cached reading when a live fetch
-/// isn't possible (no network, no location fix, or a cut-off refresh) so the glance
-/// never goes blank.
+/// Drives the word and dew point complications from `WidgetReadings`, showing the
+/// sample only before the app has ever fetched a reading.
 struct ComfortProvider: TimelineProvider {
     func placeholder(in context: Context) -> ComfortEntry { .sample }
 
@@ -27,48 +25,18 @@ struct ComfortProvider: TimelineProvider {
         nonisolated(unsafe) let completion = completion
         Task {
             let entry = await Self.currentEntry()
-            // Comfort changes slowly, so one entry plus a ~30-min refresh hint is
-            // plenty. WidgetKit may defer the reload to protect its budget.
-            let next = Date.now.addingTimeInterval(30 * 60)
+            let next = Date.now.addingTimeInterval(WidgetReadings.refreshInterval)
             completion(Timeline(entries: [entry], policy: .after(next)))
         }
     }
 
-    // WeatherKitProvider / LastKnownLocationProvider are @MainActor, so the fetch
-    // hops to the main actor; `describe` is pure and fine to call from there.
     @MainActor
     private static func currentEntry() async -> ComfortEntry {
-        do {
-            // Self-fetch fresh weather, locating via the device's own fix or, if the
-            // extension has none, the coordinate from the app's last reading. The
-            // TTL gate means an app fetch the complication's reload was triggered by
-            // is served straight from the cache the app just wrote — no second
-            // WeatherKit call. The wrapped provider re-caches on a real fetch,
-            // keeping the fallback current.
-            let provider = CachingWeatherProvider(
-                wrapping: WeatherKitProvider(location: LastKnownLocationProvider()),
-                ttl: 30 * 60
-            )
-            return entry(for: try await provider.currentSnapshot())
-        } catch {
-            if let cached = SnapshotCache().load() {
-                return entry(for: cached.snapshot)
-            }
-            return .sample
-        }
-    }
-
-    private static func entry(for snapshot: WeatherSnapshot) -> ComfortEntry {
+        guard let snapshot = await WidgetReadings.snapshot() else { return .sample }
         // Date the entry "now", not `snapshot.asOf` (WeatherKit's observation time,
         // which lags real time): this is the current reading and should display as
         // soon as the timeline is built. A past date makes WidgetKit treat the lone
         // entry as already-aged, which undercuts how it schedules the next reload.
-        // Resolve through the shared store so the complication honors the user's
-        // per-band custom words exactly as the app does.
-        ComfortEntry(
-            date: .now,
-            descriptor: snapshot.precipitation ?? CustomizationStore().resolvedDescriptor(forTempF: snapshot.temperatureF, dewpointF: snapshot.dewpointF),
-            dewpointF: snapshot.dewpointF
-        )
+        return ComfortEntry(date: .now, descriptor: WidgetReadings.descriptor(for: snapshot), dewpointF: snapshot.dewpointF)
     }
 }

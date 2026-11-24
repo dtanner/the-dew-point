@@ -26,6 +26,7 @@ struct ContentView: View {
             }
         }
         .task { await model.refresh() }
+        .task { await model.syncCustomizations() }
         // `.task` only runs when the view is first created. watchOS resumes a
         // suspended app without recreating it, so without this a reopen would show
         // the last-rendered (possibly hours-old) reading. Refetch on every return

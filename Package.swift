@@ -9,9 +9,9 @@ let package = Package(
     name: "DewPoint",
     // Floors are set low enough that the pure engine still tests on the macOS
     // host via `swift test`; the watch app sets its own (higher) deployment
-    // target. watchOS 11 / macOS 15 is the floor for the CLLocationUpdate
-    // authorization properties used in WeatherData.
-    platforms: [.watchOS(.v11), .macOS(.v15), .iOS(.v17)],
+    // target. watchOS 11 / iOS 18 / macOS 15 is the floor for the
+    // CLLocationUpdate authorization properties used in WeatherData.
+    platforms: [.watchOS(.v11), .macOS(.v15), .iOS(.v18)],
     products: [
         .library(name: "ThermalComfort", targets: ["ThermalComfort"]),
         .library(name: "WeatherData", targets: ["WeatherData"]),
