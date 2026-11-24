@@ -329,7 +329,7 @@ release kind: test lint
     fi
     notes_file=$(mktemp)
     trap 'rm -f "$notes_file"' EXIT
-    prompt="Generate concise release notes for version $version of The Dew Point (an Apple Watch app showing how humid it feels).
+    prompt="Generate concise release notes for version $version of The Dew Point (an Apple Watch and iPhone app showing how humid it feels).
     Here are the commits since ${prev_tag:-the beginning}:
 
     ${commit_log}
