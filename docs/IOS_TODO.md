@@ -31,13 +31,13 @@ list is empty.
   opens `CustomWordEditor` for that band. Open question for the spec: the
   80–89°F "Steamy" rule (`hotSteamy`) is unreachable — see
   `everyReachableBandAppearsOnceInItsOwnRow`.
+- [x] **5. Words tab.** `Phone/WordsView.swift`: saved custom words (edit,
+  swipe to delete), then every band grouped by temperature band, each with its
+  range from `BandEntry` (sampled extents plus a reading to save against). The
+  band editor sheet and range labels shared with the Bands tab live in
+  `Phone/BandEditing.swift`.
 
 ## To do
-
-- [ ] **5. Words tab.**
-  - Customizations are per *band*, not per word (Muggy appears in four bands),
-    so list saved customizations with their band context ("Muggy, 65–74°") and
-    allow edit/delete. The mockup's per-word list needs adjusting to this.
 
 - [ ] **6. iPhone widgets.**
   - iOS widget extension: small, medium, Lock Screen circular/rectangular/inline.

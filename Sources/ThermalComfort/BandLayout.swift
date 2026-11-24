@@ -59,6 +59,23 @@ public struct DewPointSegment: Equatable, Sendable {
     public let dewpointsF: ClosedRange<Int>
 }
 
+/// One comfort band and where on the sampling grid it occurs.
+public struct BandEntry: Equatable, Sendable {
+    public let band: ComfortBand
+    public let descriptor: ComfortDescriptor
+    /// The lowest to highest sampled temperature (°F) that lands in this band.
+    public let temperaturesF: ClosedRange<Int>
+    /// The lowest to highest sampled dew point (°F) that lands in this band, at
+    /// any of its temperatures. Bands with humidity or feels-like edges aren't
+    /// rectangles, so not every pair inside both ranges is in the band.
+    public let dewpointsF: ClosedRange<Int>
+    /// A reading inside the band, away from its edges where possible — what to
+    /// save a custom word against when the user picks the band rather than a
+    /// reading.
+    public let sampleTempF: Int
+    public let sampleDewpointF: Int
+}
+
 /// One temperature band and the comfort bands inside it, for a "how the words are
 /// laid out" overview.
 public struct TemperatureBandRow: Equatable, Sendable {
@@ -68,13 +85,7 @@ public struct TemperatureBandRow: Equatable, Sendable {
     public let temperaturesF: ClosedRange<Int>
     /// The comfort bands reachable in this temperature band, driest first (ordered
     /// by the mean dew point at which each occurs).
-    public let bands: [(band: ComfortBand, descriptor: ComfortDescriptor)]
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.temperatureBand == rhs.temperatureBand
-            && lhs.temperaturesF == rhs.temperaturesF
-            && lhs.bands.map(\.band) == rhs.bands.map(\.band)
-    }
+    public let bands: [BandEntry]
 }
 
 /// Display data describing how `classify` divides up conditions, derived by
@@ -110,18 +121,38 @@ public enum BandLayout {
     /// Every temperature band, coldest first, with the comfort bands inside it.
     public static let temperatureBands: [TemperatureBandRow] = sampleTemperatureBands()
 
+    /// The entry for `band`, or `nil` for a band no reading reaches.
+    public static func entry(for band: ComfortBand) -> BandEntry? {
+        temperatureBands.lazy.flatMap(\.bands).first { $0.band == band }
+    }
+
     // The grid spans every band with room to spare: Bitter starts below 20°F and
     // Extreme at 100°F, and dew points this low read the same as any lower ones.
-    static let temperatureGrid = -20...120
-    static let dewpointFloor = -40
+    // Ranges that reach these edges are open-ended in reality.
+    public static let temperatureGrid = -20...120
+    public static let dewpointFloor = -40
 
     private static func sampleTemperatureBands() -> [TemperatureBandRow] {
-        // Per comfort band: its word and the running dew-point sum/count for ordering.
+        // Per comfort band: its word and every sampled reading in it, in grid order.
         struct BandStats {
             let descriptor: ComfortDescriptor
-            var dewTotal = 0
-            var count = 0
-            var meanDew: Double { Double(dewTotal) / Double(count) }
+            var samples: [(temp: Int, dew: Int)] = []
+            var meanDew: Double { Double(samples.reduce(0) { $0 + $1.dew }) / Double(samples.count) }
+
+            func entry(_ band: ComfortBand) -> BandEntry {
+                let temps = samples.map(\.temp), dews = samples.map(\.dew)
+                // Grid order is temperature-major, so the middle sample sits at the
+                // band's middle temperature, inside its dew-point run there.
+                let middle = samples[samples.count / 2]
+                return BandEntry(
+                    band: band,
+                    descriptor: descriptor,
+                    temperaturesF: (temps.min() ?? 0)...(temps.max() ?? 0),
+                    dewpointsF: (dews.min() ?? 0)...(dews.max() ?? 0),
+                    sampleTempF: middle.temp,
+                    sampleDewpointF: middle.dew
+                )
+            }
         }
         struct Row {
             let temperatureBand: TemperatureBand
@@ -140,8 +171,7 @@ public enum BandLayout {
                 }
                 let last = rows.count - 1
                 rows[last].temps = rows[last].temps.lowerBound...temp
-                rows[last].stats[result.band, default: BandStats(descriptor: result.descriptor)].dewTotal += dew
-                rows[last].stats[result.band]?.count += 1
+                rows[last].stats[result.band, default: BandStats(descriptor: result.descriptor)].samples.append((temp, dew))
             }
         }
         return rows.map { row in
@@ -150,7 +180,7 @@ public enum BandLayout {
                 temperaturesF: row.temps,
                 bands: row.stats
                     .sorted { $0.value.meanDew < $1.value.meanDew }
-                    .map { ($0.key, $0.value.descriptor) }
+                    .map { $0.value.entry($0.key) }
             )
         }
     }

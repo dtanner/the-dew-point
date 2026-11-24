@@ -85,6 +85,12 @@ final class ConditionsModel {
         return customizations.customization(forTempF: tempF, dewpointF: dewpointF) != nil
     }
 
+    /// The user's custom words, oldest first.
+    var savedCustomizations: [Customization] {
+        _ = customizationsRevision
+        return customizations.all()
+    }
+
     /// The word shown for `band`: the user's, if set, otherwise `descriptor` (the
     /// band's default).
     func word(for band: ComfortBand, default descriptor: ComfortDescriptor) -> String {

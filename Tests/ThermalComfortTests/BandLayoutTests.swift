@@ -73,4 +73,21 @@ struct BandLayoutTests {
         #expect(!seen.contains(.hotSteamy))
         #expect(seen.count == 35)
     }
+
+    @Test func entriesDescribeTheirBand() {
+        let muggy = BandLayout.entry(for: .mildMuggy)
+        #expect(muggy?.temperaturesF == 65...74)
+        #expect(muggy?.dewpointsF == 63...74)
+        #expect(BandLayout.entry(for: .coolCrisp)?.dewpointsF == BandLayout.dewpointFloor...37)
+        #expect(BandLayout.entry(for: .hotSteamy) == nil)
+    }
+
+    // The sample is what a custom word picked from the list is saved against, so it
+    // must classify back into its own band.
+    @Test func everySampleLandsInItsBand() {
+        for entry in BandLayout.temperatureBands.flatMap(\.bands) {
+            let result = classify(tempF: Double(entry.sampleTempF), dewpointF: Double(entry.sampleDewpointF))
+            #expect(result.band == entry.band)
+        }
+    }
 }

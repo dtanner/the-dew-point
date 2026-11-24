@@ -70,7 +70,7 @@ private struct CurrentBandCard: View {
                 }
             }
             if let row {
-                Text("\(row.temperatureBand.name) · \(temperatureLabel(row, in: BandLayout.temperatureBands))")
+                Text("\(row.temperatureBand.name) · \(temperatureLabel(row.temperaturesF))")
                     .font(.footnote.weight(.semibold))
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
@@ -89,17 +89,7 @@ private struct CurrentBandCard: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .sheet(item: $editing) { edit in
-            CustomWordEditor(
-                defaultWord: edit.defaultWord,
-                initialText: edit.customWord ?? "",
-                isCustomized: edit.customWord != nil,
-                bandRange: edit.range,
-                onSave: { model.customize($0, tempF: edit.tempF, dewpointF: edit.dewpointF) },
-                onReset: { model.removeCustomization(tempF: edit.tempF, dewpointF: edit.dewpointF) }
-            )
-            .presentationDetents([.medium])
-        }
+        .bandEditor($editing, model: model)
     }
 
     // Dew points to sweep: wide enough to show the dry words below the current
@@ -145,17 +135,6 @@ private struct CurrentBandCard: View {
             range: "at \(Int(snapshot.temperatureF.rounded()))°, dew point \(dewLabel(segments, index))"
         )
     }
-}
-
-/// The band a segment tap opens in the word editor.
-private struct BandEdit: Identifiable {
-    let band: ComfortBand
-    let tempF: Double
-    let dewpointF: Double
-    let defaultWord: String
-    let customWord: String?
-    let range: String
-    var id: ComfortBand { band }
 }
 
 /// The words across the dew-point sweep as one bar, each word's width following
@@ -303,7 +282,7 @@ private struct AllBandsList: View {
                 let row = rows[index]
                 let isCurrent = row.temperatureBand == current
                 GridRow {
-                    Text(temperatureLabel(row, in: rows))
+                    Text(temperatureLabel(row.temperaturesF))
                         .foregroundStyle(isCurrent ? Color.accentColor : .secondary)
                         .monospacedDigit()
                     // A no-break space before each dot keeps it on the word's line,
@@ -324,15 +303,6 @@ private struct AllBandsList: View {
             .map { model.word(for: $0.band, default: $0.descriptor) }
             .filter { seen.insert($0).inserted }
     }
-}
-
-/// A row's temperatures, e.g. "65–74°"; the coldest and hottest rows are
-/// open-ended ("Below 20°", "100°+"), not bounded by the sampling grid.
-private func temperatureLabel(_ row: TemperatureBandRow, in rows: [TemperatureBandRow]) -> String {
-    let range = row.temperaturesF
-    if row == rows.first { return "Below \(range.upperBound + 1)°" }
-    if row == rows.last { return "\(range.lowerBound)°+" }
-    return "\(range.lowerBound)–\(range.upperBound)°"
 }
 
 /// A segment's dew points, e.g. "50–56°"; the driest and most humid are
