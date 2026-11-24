@@ -5,24 +5,26 @@ import SwiftUI
 /// than once per tab.
 struct RootView: View {
     @State private var model: ConditionsModel
+    @State private var tab: AppTab
     @Environment(\.scenePhase) private var scenePhase
 
     init(model: ConditionsModel) {
         _model = State(initialValue: model)
+        _tab = State(initialValue: AppTab.launchTab)
     }
 
     var body: some View {
-        TabView {
-            Tab("Now", systemImage: "drop") {
+        TabView(selection: $tab) {
+            Tab("Now", systemImage: "drop", value: .now) {
                 NowView(model: model)
             }
-            Tab("Today", systemImage: "clock") {
+            Tab("Today", systemImage: "clock", value: .today) {
                 TodayView(model: model)
             }
-            Tab("Bands", systemImage: "square.grid.2x2") {
+            Tab("Bands", systemImage: "square.grid.2x2", value: .bands) {
                 BandsView(model: model)
             }
-            Tab("Words", systemImage: "pencil") {
+            Tab("Words", systemImage: "pencil", value: .words) {
                 WordsView(model: model)
             }
         }
@@ -40,5 +42,15 @@ struct RootView: View {
                 Task { await model.refresh() }
             }
         }
+    }
+}
+
+enum AppTab: String {
+    case now, today, bands, words
+
+    /// The tab to open on launch: Now, unless `DEWPOINT_TAB` names another, which
+    /// lets `just phone-screenshots` capture each tab without driving the UI.
+    static var launchTab: AppTab {
+        ProcessInfo.processInfo.environment["DEWPOINT_TAB"].flatMap(AppTab.init(rawValue:)) ?? .now
     }
 }

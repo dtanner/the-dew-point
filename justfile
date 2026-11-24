@@ -103,18 +103,18 @@ build-phone: generate
 # the same way as `run-sim-fake`, e.g. `just run-phone-sim 70 64 "" 42`, since
 # WeatherKit doesn't work in simulators.
 [doc('Run the iPhone app in the simulator, optionally with fake conditions: `just run-phone-sim 70 64 "Heavy Rain" 42`.')]
-run-phone-sim temp="" dew="" precip="" aqi="": generate
+run-phone-sim temp="" dew="" precip="" aqi="" device=phone_sim: generate
     #!/usr/bin/env zsh
     set -eu
     xcodebuild build \
         -project TheDewPoint.xcodeproj \
         -scheme TheDewPointPhone \
-        -destination 'platform=iOS Simulator,name={{phone_sim}}' \
+        -destination 'platform=iOS Simulator,name={{device}}' \
         -derivedDataPath build/dd-phone-sim \
         -quiet
     open -b com.apple.dt.Devices
-    xcrun simctl boot '{{phone_sim}}' 2>/dev/null || true
-    xcrun simctl install '{{phone_sim}}' \
+    xcrun simctl boot '{{device}}' 2>/dev/null || true
+    xcrun simctl install '{{device}}' \
         build/dd-phone-sim/Build/Products/Debug-iphonesimulator/TheDewPoint.app
     if [[ -n "{{temp}}" && -n "{{dew}}" ]]; then
         fake="{{temp}},{{dew}}"
@@ -122,7 +122,31 @@ run-phone-sim temp="" dew="" precip="" aqi="": generate
         export SIMCTL_CHILD_DEWPOINT_FAKE="$fake"
     fi
     [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
-    xcrun simctl launch --terminate-running-processes '{{phone_sim}}' {{phone_bundle_id}}
+    xcrun simctl launch --terminate-running-processes '{{device}}' {{phone_bundle_id}}
+
+# App Store screenshots of each iPhone tab, on the 6.9" simulator App Store
+# Connect requires, with fake conditions and a clean status bar. Writes
+# build/screenshots/phone/<tab>.png. E.g. `just phone-screenshots 70 64 "" 38`.
+[doc('Screenshot each iPhone tab on the 6.9" simulator: `just phone-screenshots 70 64 "" 38`.')]
+phone-screenshots temp="70" dew="64" precip="" aqi="38" device="iPhone 17 Pro Max": (run-phone-sim temp dew precip aqi device)
+    #!/usr/bin/env zsh
+    set -eu
+    out=build/screenshots/phone
+    mkdir -p "$out"
+    xcrun simctl status_bar '{{device}}' override --time 9:41 --batteryState charged \
+        --batteryLevel 100 --cellularBars 4 --wifiBars 3
+    fake="{{temp}},{{dew}}"
+    [[ -n "{{precip}}" ]] && fake+=",{{precip}}"
+    export SIMCTL_CHILD_DEWPOINT_FAKE="$fake"
+    [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
+    for tab in now today bands words; do
+        SIMCTL_CHILD_DEWPOINT_TAB=$tab xcrun simctl launch --terminate-running-processes \
+            '{{device}}' {{phone_bundle_id}} >/dev/null
+        sleep 3
+        xcrun simctl io '{{device}}' screenshot "$out/$tab.png" >/dev/null
+        echo "$out/$tab.png"
+    done
+    xcrun simctl status_bar '{{device}}' clear
 
 # Stream the watch app's logs from the simulator.
 logs:
