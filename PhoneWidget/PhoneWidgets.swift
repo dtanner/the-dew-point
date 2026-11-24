@@ -4,12 +4,13 @@ import WeatherData
 import WidgetKit
 
 /// Entry point for the iPhone widget extension: the comfort word on the Home and
-/// Lock Screens, plus the dew point and AQI as Lock Screen circles, mirroring the
-/// watch complications.
+/// Lock Screens, the coming word changes as a Lock Screen rectangle, and the dew
+/// point and AQI as Lock Screen circles, mirroring the watch complications.
 @main
 struct DewPointPhoneWidgets: WidgetBundle {
     var body: some Widget {
         ComfortWidget()
+        ComingUpWidget()
         DewPointCircleWidget()
         AirQualityCircleWidget()
     }
@@ -24,8 +25,8 @@ struct PhoneEntry: TimelineEntry {
     /// The word to show for `snapshot`: precipitation, the user's word, or the default.
     let descriptor: ComfortDescriptor?
     let aqi: Int?
-    /// The word changes still to come today, for the medium widget; `nil` when the
-    /// forecast couldn't be loaded.
+    /// The word changes still to come, for the medium and Coming Up widgets; `nil`
+    /// when the forecast couldn't be loaded.
     let upcoming: [WordChange]?
 
     var isPrecipitation: Bool { snapshot?.precipitation != nil }
@@ -78,8 +79,8 @@ struct PhoneProvider: TimelineProvider {
         nonisolated(unsafe) let completion = completion
         Task {
             let entry = await Self.currentEntry()
-            // Reload by the next listed change too, so the medium widget doesn't keep
-            // showing it as "coming up" once its hour has started.
+            // Reload by the next listed change too, so the medium and Coming Up
+            // widgets don't keep showing it as coming up once its hour has started.
             let nextChange = entry.upcoming?.map(\.date).first { $0 > .now }
             let next = min(Date.now.addingTimeInterval(WidgetReadings.refreshInterval), nextChange ?? .distantFuture)
             completion(Timeline(entries: [entry], policy: .after(next)))

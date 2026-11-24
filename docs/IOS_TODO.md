@@ -40,7 +40,9 @@ list is empty.
   `Phone/BandEditing.swift`.
 - [x] **6. iPhone widgets.** `TheDewPointPhoneWidget` extension (`PhoneWidget/`):
   Comfort Word (small, medium with coming-up changes, Lock Screen rectangular and
-  inline) plus Dew Point and Air Quality Lock Screen circles. Fetching lives in
+  inline), a Coming Up Lock Screen rectangle (the next two word changes), plus
+  Dew Point and Air Quality Lock Screen circles. Suggested Lock Screen: Comfort
+  Word inline, then Coming Up, Dew Point and Air Quality below the clock. Fetching lives in
   `WidgetShared/WidgetReadings.swift`, shared with the watch complication;
   `upcomingWordChanges` in WeatherData keeps the widget and the app's card in
   step. Small and medium verified with real weather on device 2026-11-24, as was
