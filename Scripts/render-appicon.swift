@@ -1,6 +1,6 @@
 #!/usr/bin/env swift
 
-// Renders the app icon into the asset catalog. Run via `just appicon`
+// Renders the app icon into both apps' asset catalogs (watch and iPhone). Run via `just appicon`
 // (or `swift Scripts/render-appicon.swift`).
 //
 // The icon's source of truth is images/icon.svg (a dew drop on a deep
@@ -12,7 +12,10 @@
 import AppKit
 
 let svgPath = "images/icon.svg"
-let outPath = "App/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
+let outPaths = [
+    "App/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+    "Phone/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+]
 let side = 1024
 
 guard let svg = NSImage(contentsOfFile: svgPath) else {
@@ -43,5 +46,7 @@ guard let image = cg.makeImage(),
     FileHandle.standardError.write(Data("failed to encode PNG\n".utf8))
     exit(1)
 }
-try png.write(to: URL(fileURLWithPath: outPath))
-print("rendered \(outPath) from \(svgPath)")
+for outPath in outPaths {
+    try png.write(to: URL(fileURLWithPath: outPath))
+    print("rendered \(outPath) from \(svgPath)")
+}
