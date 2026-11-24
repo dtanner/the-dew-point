@@ -55,8 +55,10 @@ targets:
         PRODUCT_NAME: TheDewPoint
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        # iPhone only for now; iPad would need its own layout pass.
-        TARGETED_DEVICE_FAMILY: "1"
+        # iPhone and iPad. iPad isn't optional: 1.2.4's stub container shipped with
+        # the default family (both), and App Store Connect rejects an update that
+        # drops a device family the previous version supported.
+        TARGETED_DEVICE_FAMILY: "1,2"
     info:
       path: Phone/Info.plist
       properties:
@@ -75,6 +77,12 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+        # iPad apps must support every orientation to run in a resizable window.
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
     entitlements:
       path: Phone/TheDewPointPhone.entitlements
       properties:
@@ -111,7 +119,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.dantanner.dewpoint.widget
-        TARGETED_DEVICE_FAMILY: "1"
+        # Matches the app's family; see the comment there.
+        TARGETED_DEVICE_FAMILY: "1,2"
     info:
       path: PhoneWidget/Info.plist
       properties:

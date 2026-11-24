@@ -124,14 +124,15 @@ run-phone-sim temp="" dew="" precip="" aqi="" device=phone_sim: generate
     [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
     xcrun simctl launch --terminate-running-processes '{{device}}' {{phone_bundle_id}}
 
-# App Store screenshots of each iPhone tab, on the 6.9" simulator App Store
+# App Store screenshots of each tab, on the 6.9" iPhone simulator App Store
 # Connect requires, with fake conditions and a clean status bar. Writes
-# build/screenshots/phone/<tab>.png. E.g. `just phone-screenshots 70 64 "" 38`.
+# build/screenshots/<out>/<tab>.png. For the 13" iPad set:
+# `just phone-screenshots 70 64 "" 38 "iPad Pro 13-inch (M5)" ipad`.
 [doc('Screenshot each iPhone tab on the 6.9" simulator: `just phone-screenshots 70 64 "" 38`.')]
-phone-screenshots temp="70" dew="64" precip="" aqi="38" device="iPhone 17 Pro Max": (run-phone-sim temp dew precip aqi device)
+phone-screenshots temp="70" dew="64" precip="" aqi="38" device="iPhone 17 Pro Max" out="phone": (run-phone-sim temp dew precip aqi device)
     #!/usr/bin/env zsh
     set -eu
-    out=build/screenshots/phone
+    out=build/screenshots/{{out}}
     mkdir -p "$out"
     xcrun simctl status_bar '{{device}}' override --time 9:41 --batteryState charged \
         --batteryLevel 100 --cellularBars 4 --wifiBars 3
