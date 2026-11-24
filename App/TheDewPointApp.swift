@@ -54,6 +54,11 @@ struct TheDewPointApp: App {
         if let aqiProvider = Providers.airQuality(location: LastKnownLocationProvider()) {
             _ = try? await aqiProvider.currentAQI()
         }
+        // Pull custom words saved on the iPhone too: the complication reads only the
+        // local copy, so without this a new word reached the watch face only once
+        // the app was opened.
+        NSUbiquitousKeyValueStore.default.synchronize()
+        CustomizationStore.synced.syncFromCloud()
         WidgetCenter.shared.reloadAllTimelines()
     }
 }

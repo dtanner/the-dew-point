@@ -17,13 +17,12 @@ struct BandEdit: Identifiable {
     /// Editing `entry` as the user's word list sees it.
     @MainActor
     init(entry: BandEntry, model: ConditionsModel) {
-        let word = model.word(for: entry.band, default: entry.descriptor)
         self.init(
             band: entry.band,
             tempF: Double(entry.sampleTempF),
             dewpointF: Double(entry.sampleDewpointF),
             defaultWord: entry.descriptor.word,
-            customWord: word == entry.descriptor.word ? nil : word,
+            customWord: model.customWord(for: entry.band),
             range: entry.rangeDescription
         )
     }

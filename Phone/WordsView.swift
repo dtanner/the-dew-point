@@ -33,10 +33,16 @@ struct WordsView: View {
     }
 
     private var savedSection: some View {
-        let saved = model.savedCustomizations.compactMap { custom in
+        // One row per band. Two saved words can share a band after a threshold
+        // change; the newest is the one in effect, as the store resolves it.
+        var seenBands = Set<ComfortBand>()
+        let saved = model.savedCustomizations.reversed().compactMap { custom in
             BandLayout.entry(for: classify(tempF: custom.tempF, dewpointF: custom.dewpointF).band)
                 .map { (custom: custom, entry: $0) }
         }
+        .filter { seenBands.insert($0.entry.band).inserted }
+        .reversed()
+        .map { $0 }
         return Section {
             if saved.isEmpty {
                 Text("No custom words yet. Tap any band below to give it your own word.")
@@ -85,8 +91,9 @@ private struct BandRow: View {
     let isCurrent: Bool
 
     var body: some View {
-        let word = model.word(for: entry.band, default: entry.descriptor)
-        let isCustom = word != entry.descriptor.word
+        let custom = model.customWord(for: entry.band)
+        let word = custom ?? entry.descriptor.word
+        let isCustom = custom != nil
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 8) {

@@ -130,8 +130,13 @@ public struct CustomizationStore {
     ///   have one for a band, so an existing watch user's words survive installing
     ///   the iPhone app (and vice versa).
     /// - After that: the cloud copy replaces the local one, so deletions propagate.
+    ///
+    /// Pass `initialSync: true` when iCloud reports that its first download replaced
+    /// values this device had set (`NSUbiquitousKeyValueStoreInitialSyncChange`).
+    /// A fresh install that saved a word before the download pushed a list without
+    /// the other devices' words; merging keeps both sides.
     @discardableResult
-    public func syncFromCloud() -> Bool {
+    public func syncFromCloud(initialSync: Bool = false) -> Bool {
         guard let cloud else { return false }
         let local = all()
         guard let cloudList = Self.decode(cloud.data(forKey: Self.key)) else {
@@ -142,7 +147,7 @@ public struct CustomizationStore {
             return false
         }
         var merged = cloudList
-        if !defaults.bool(forKey: Self.cloudSyncedKey) {
+        if initialSync || !defaults.bool(forKey: Self.cloudSyncedKey) {
             let cloudBands = Set(cloudList.map(\.band))
             merged += local.filter { !cloudBands.contains($0.band) }
             defaults.set(true, forKey: Self.cloudSyncedKey)
@@ -160,8 +165,8 @@ public struct CustomizationStore {
     private func write(replacingBandOf tempF: Double, _ dewpointF: Double, with replacement: Customization?) {
         // A device that hasn't reconciled yet would otherwise push a list missing
         // the other devices' words, overwriting them in the cloud. (If the cloud
-        // copy hasn't downloaded to this device yet there's nothing to merge, and
-        // this write wins — an accepted edge on a brand-new install.)
+        // copy hasn't downloaded to this device yet there's nothing to merge here;
+        // the download then arrives as an initial-sync change, which merges.)
         if cloud != nil, !defaults.bool(forKey: Self.cloudSyncedKey) {
             syncFromCloud()
         }

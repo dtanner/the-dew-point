@@ -92,16 +92,13 @@ private struct NowSummary: View {
 
 /// The next few word changes, as on the app's "Coming up" card.
 private struct ComingUp: View {
-    let changes: [WordChange]
+    /// `nil` when the forecast couldn't be loaded.
+    let changes: [WordChange]?
     let hasReading: Bool
 
     var body: some View {
         Group {
-            if changes.isEmpty {
-                Text(hasReading ? "No change in the forecast." : "")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            } else {
+            if let changes, !changes.isEmpty {
                 Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 10) {
                     ForEach(changes.prefix(4), id: \.date) { change in
                         GridRow {
@@ -117,6 +114,10 @@ private struct ComingUp: View {
                     }
                 }
                 .font(.subheadline)
+            } else if hasReading {
+                Text(changes == nil ? "Forecast unavailable." : "No change in the forecast.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

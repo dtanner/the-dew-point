@@ -24,8 +24,9 @@ struct PhoneEntry: TimelineEntry {
     /// The word to show for `snapshot`: precipitation, the user's word, or the default.
     let descriptor: ComfortDescriptor?
     let aqi: Int?
-    /// The word changes still to come today, for the medium widget.
-    let upcoming: [WordChange]
+    /// The word changes still to come today, for the medium widget; `nil` when the
+    /// forecast couldn't be loaded.
+    let upcoming: [WordChange]?
 
     var isPrecipitation: Bool { snapshot?.precipitation != nil }
 }
@@ -77,7 +78,10 @@ struct PhoneProvider: TimelineProvider {
         nonisolated(unsafe) let completion = completion
         Task {
             let entry = await Self.currentEntry()
-            let next = Date.now.addingTimeInterval(WidgetReadings.refreshInterval)
+            // Reload by the next listed change too, so the medium widget doesn't keep
+            // showing it as "coming up" once its hour has started.
+            let nextChange = entry.upcoming?.map(\.date).first { $0 > .now }
+            let next = min(Date.now.addingTimeInterval(WidgetReadings.refreshInterval), nextChange ?? .distantFuture)
             completion(Timeline(entries: [entry], policy: .after(next)))
         }
     }
@@ -86,12 +90,14 @@ struct PhoneProvider: TimelineProvider {
     private static func currentEntry() async -> PhoneEntry {
         let aqi = await WidgetReadings.aqi()
         guard let snapshot = await WidgetReadings.snapshot() else {
-            return PhoneEntry(date: .now, snapshot: nil, descriptor: nil, aqi: aqi, upcoming: [])
+            return PhoneEntry(date: .now, snapshot: nil, descriptor: nil, aqi: aqi, upcoming: nil)
         }
         let descriptor = WidgetReadings.descriptor(for: snapshot)
         let store = CustomizationStore()
-        let upcoming = upcomingWordChanges(in: await WidgetReadings.forecast(), now: .now, currentWord: descriptor.word) {
-            store.resolvedDescriptor(forTempF: $0, dewpointF: $1).word
+        let upcoming = await WidgetReadings.forecast().map { hours in
+            upcomingWordChanges(in: hours, now: .now, currentWord: descriptor.word) {
+                store.resolvedDescriptor(forTempF: $0, dewpointF: $1).word
+            }
         }
         // Dated now, not at the observation time, so WidgetKit shows it right away.
         return PhoneEntry(date: .now, snapshot: snapshot, descriptor: descriptor, aqi: aqi, upcoming: upcoming)

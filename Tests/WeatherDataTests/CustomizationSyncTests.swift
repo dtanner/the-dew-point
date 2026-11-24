@@ -91,6 +91,26 @@ struct CustomizationSyncTests {
         #expect(phone.all().map(\.word) == ["Soup"])
     }
 
+    // A fresh install saves a word before iCloud has downloaded the other device's
+    // words. The download then replaces this device's cloud value, and iCloud flags
+    // it as an initial-sync change: both sides' words must survive.
+    @Test func initialSyncChangeMergesWordsSavedBeforeTheDownload() {
+        let cloud = FakeCloud()
+        let watch = makeDevice(cloud)
+        watch.setWord("Soup", forTempF: 70, dewpointF: 64)
+        let watchCopy = cloud.values
+
+        let phone = makeDevice(cloud)
+        cloud.values = [:] // the watch's copy hasn't reached the phone yet
+        phone.setWord("Brrr", forTempF: 55, dewpointF: 30)
+        cloud.values = watchCopy // the download lands, overwriting the early write
+
+        #expect(phone.syncFromCloud(initialSync: true))
+        #expect(Set(phone.all().map(\.word)) == ["Soup", "Brrr"])
+        #expect(watch.syncFromCloud())
+        #expect(Set(watch.all().map(\.word)) == ["Soup", "Brrr"])
+    }
+
     @Test func storeWithoutCloudNeverSyncs() {
         let store = CustomizationStore(defaults: makeDefaults())
         #expect(!store.syncFromCloud())

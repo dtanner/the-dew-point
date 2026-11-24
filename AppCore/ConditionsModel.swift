@@ -45,7 +45,12 @@ final class ConditionsModel {
     }
 
     func refresh() async {
-        phase = .loading
+        // Keep a shown reading on screen while refetching: swapping in the spinner
+        // would flash it on every return to the app and tear down anything presented
+        // from the loaded screen, such as a half-typed custom word.
+        if case .loaded = phase {} else {
+            phase = .loading
+        }
         do {
             let snapshot = try await provider.currentSnapshot()
             phase = .loaded(snapshot, resolvedDescriptor(for: snapshot))
@@ -94,8 +99,14 @@ final class ConditionsModel {
     /// The word shown for `band`: the user's, if set, otherwise `descriptor` (the
     /// band's default).
     func word(for band: ComfortBand, default descriptor: ComfortDescriptor) -> String {
+        customWord(for: band) ?? descriptor.word
+    }
+
+    /// The user's word for `band`, or `nil` if it has none — even one spelled like
+    /// the default counts, so it can still be reset.
+    func customWord(for band: ComfortBand) -> String? {
         _ = customizationsRevision
-        return customizations.customization(for: band)?.word ?? descriptor.word
+        return customizations.customization(for: band)?.word
     }
 
     /// The forecast's word changes from the current hour on, each resolved the way
@@ -125,16 +136,21 @@ final class ConditionsModel {
     func syncCustomizations() async {
         NSUbiquitousKeyValueStore.default.synchronize()
         applyCloudCustomizations()
+        // Each change carries whether it is iCloud's first download overwriting
+        // values this device set early, which the store merges rather than applies.
         let changes = NotificationCenter.default.notifications(
             named: NSUbiquitousKeyValueStore.didChangeExternallyNotification
-        ).map { _ in () }
-        for await _ in changes {
-            applyCloudCustomizations()
+        ).map { notification in
+            notification.userInfo?[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int
+                == NSUbiquitousKeyValueStoreInitialSyncChange
+        }
+        for await initialSync in changes {
+            applyCloudCustomizations(initialSync: initialSync)
         }
     }
 
-    private func applyCloudCustomizations() {
-        guard customizations.syncFromCloud() else { return }
+    private func applyCloudCustomizations(initialSync: Bool = false) {
+        guard customizations.syncFromCloud(initialSync: initialSync) else { return }
         customizationsChanged()
     }
 

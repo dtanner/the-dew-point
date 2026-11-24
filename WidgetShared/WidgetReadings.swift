@@ -52,13 +52,15 @@ enum WidgetReadings {
         return AirQualityCache().aqi(notOlderThan: maxAQICacheAge)
     }
 
-    /// The coming hours, or empty when neither a fetch nor a fresh cache has them.
-    static func forecast() async -> [ForecastHour] {
+    /// The coming hours, or `nil` when neither a fetch nor a fresh cache has them —
+    /// distinct from an empty forecast, so a widget doesn't claim "no change" when
+    /// it simply couldn't load one.
+    static func forecast() async -> [ForecastHour]? {
         let provider = CachingForecastProvider(
             wrapping: WeatherKitForecastProvider(location: LastKnownLocationProvider()),
             ttl: refreshInterval
         )
-        return (try? await provider.hourlyForecast()) ?? []
+        return try? await provider.hourlyForecast()
     }
 
     /// The word to show for `snapshot`, resolved as the apps resolve it:
