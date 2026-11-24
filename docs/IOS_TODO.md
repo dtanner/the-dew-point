@@ -54,4 +54,6 @@ list is empty.
     new App ID: run one archive with plain `-allowProvisioningUpdates` first.
   - TestFlight build: check that the watch app still installs standalone and
     updates over the existing watch-only version.
-  - README / CONTRIBUTING: describe the iPhone app; App Store screenshots.
+  - App Store screenshots for the iPhone (README and CONTRIBUTING already
+    describe the iPhone app; add iPhone shots to the README's assets release
+    too).
