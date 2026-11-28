@@ -140,7 +140,7 @@ phone-screenshots temp="70" dew="64" precip="" aqi="38" device="iPhone 17 Pro Ma
     [[ -n "{{precip}}" ]] && fake+=",{{precip}}"
     export SIMCTL_CHILD_DEWPOINT_FAKE="$fake"
     [[ -n "{{aqi}}" ]] && export SIMCTL_CHILD_DEWPOINT_FAKE_AQI="{{aqi}}"
-    for tab in now today bands words; do
+    for tab in now today bands words setup; do
         SIMCTL_CHILD_DEWPOINT_TAB=$tab xcrun simctl launch --terminate-running-processes \
             '{{device}}' {{phone_bundle_id}} >/dev/null
         sleep 3

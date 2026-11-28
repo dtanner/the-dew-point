@@ -27,6 +27,9 @@ struct RootView: View {
             Tab("Words", systemImage: "pencil", value: .words) {
                 WordsView(model: model)
             }
+            Tab("Setup", systemImage: "questionmark.circle", value: .setup) {
+                SetupView()
+            }
         }
         // The app's look is built for dark only, matching the watch, where the
         // AQI colors are tuned for a dark background (see AQICategoryColor).
@@ -46,7 +49,7 @@ struct RootView: View {
 }
 
 enum AppTab: String {
-    case now, today, bands, words
+    case now, today, bands, words, setup
 
     /// The tab to open on launch: Now, unless `DEWPOINT_TAB` names another, which
     /// lets `just phone-screenshots` capture each tab without driving the UI.
